@@ -1,0 +1,61 @@
+# ------------------------------------------------------
+# THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
+# ------------------------------------------------------
+
+type User {
+  id: Int!
+  createdAt: String!
+  updatedAt: String!
+  username: String!
+  password: String!
+}
+
+type FieldError {
+  field: String!
+  message: String!
+}
+
+type UserResponse {
+  errors: [FieldError!]
+  user: User
+}
+
+type Post {
+  id: Int!
+  createdAt: String!
+  updatedAt: String!
+  title: String!
+}
+
+type Author {
+  id: Int!
+  firstName: String
+  lastName: String
+  posts: [Post!]!
+}
+
+type Query {
+  author(id: Int!): Author!
+  posts: [Post!]!
+}
+
+type Mutation {
+  register(userInput: UserInput!): UserResponse!
+  createPost(createPostInput: CreatePostInput!): Post!
+  updatePost(updatePostInput: UpdatePostInput!): Post
+  deletePost(id: Int!): Boolean!
+}
+
+input UserInput {
+  username: String!
+  password: String!
+}
+
+input CreatePostInput {
+  title: String!
+}
+
+input UpdatePostInput {
+  id: Int!
+  title: String
+}
