@@ -13,7 +13,7 @@ import { Field, Int, ObjectType } from '@nestjs/graphql';
 export class User {
   @PrimaryGeneratedColumn()
   @Field((type) => Int)
-  id: number;
+  id!: number;
 
   @Field((type) => String)
   @CreateDateColumn()
@@ -25,9 +25,9 @@ export class User {
 
   @Field()
   @Column({ unique: true })
-  username: string;
+  username!: string;
 
   @Field()
   @Column()
-  password: string;
+  password!: string;
 }

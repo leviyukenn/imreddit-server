@@ -41,6 +41,7 @@ type Query {
 
 type Mutation {
   register(userInput: UserInput!): UserResponse!
+  login(userInput: UserInput!): UserResponse!
   createPost(createPostInput: CreatePostInput!): Post!
   updatePost(updatePostInput: UpdatePostInput!): Post
   deletePost(id: Int!): Boolean!

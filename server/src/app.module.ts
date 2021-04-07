@@ -1,4 +1,6 @@
-import { Module } from '@nestjs/common';
+// const redisStore = require('cache-manager-redis-store');
+
+import { Module, CacheModule } from '@nestjs/common';
 import { GraphQLModule } from '@nestjs/graphql';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Connection, getConnectionOptions } from 'typeorm';
@@ -19,6 +21,7 @@ import { PostsModule } from './posts/posts.module';
     GraphQLModule.forRoot({
       autoSchemaFile: join(process.cwd(), 'src/schema.gql'),
     }),
+   
     UsersModule,
     AuthorsModule,
     PostsModule,

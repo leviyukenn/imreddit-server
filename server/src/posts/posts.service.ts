@@ -18,7 +18,7 @@ export class PostsService {
     return this.postsRepository.find();
   }
 
-  findOne(id: number): Promise<Post> {
+  findOne(id: number): Promise<Post | undefined> {
     return this.postsRepository.findOne(id);
   }
 

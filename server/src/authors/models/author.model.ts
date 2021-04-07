@@ -4,7 +4,7 @@ import { Post } from '../../posts/post.entity';
 @ObjectType()
 export class Author {
   @Field((type) => Int)
-  id: number;
+  id!: number;
 
   @Field({ nullable: true })
   firstName?: string;
@@ -13,5 +13,5 @@ export class Author {
   lastName?: string;
 
   @Field((type) => [Post])
-  posts: Post[];
+  posts!: Post[];
 }

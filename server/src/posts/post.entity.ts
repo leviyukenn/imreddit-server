@@ -13,7 +13,7 @@ import { Field, Int, ObjectType } from '@nestjs/graphql';
 export class Post {
   @PrimaryGeneratedColumn()
   @Field((type) => Int)
-  id: number;
+  id!: number;
 
   @Field((type) => String)
   @CreateDateColumn()
@@ -25,5 +25,5 @@ export class Post {
 
   @Field()
   @Column()
-  title: string;
+  title!: string;
 }

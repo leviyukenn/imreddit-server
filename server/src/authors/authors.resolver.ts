@@ -9,7 +9,7 @@ import {
 import { Author } from './models/author.model';
 import { Post } from 'src/posts/post.entity';
 
-@Resolver((of) => Author)
+@Resolver(() => Author)
 export class AuthorsResolver {
   @Query((returns) => Author, { name: 'author' })
   async getAuthor(@Args('id', { type: () => Int }) id: number) {
