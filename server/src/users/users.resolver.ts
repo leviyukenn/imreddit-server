@@ -6,21 +6,20 @@ import {
   ResolveField,
   Parent,
   Mutation,
+  Context,
 } from '@nestjs/graphql';
 
 import { User } from './user.entity';
 import { UsersService } from './users.service';
 import { UserInput, UserResponse } from './dto/user.dto';
 import * as argon2 from 'argon2';
-import { CACHE_MANAGER, Inject } from '@nestjs/common';
+import { CACHE_MANAGER, Inject, Req } from '@nestjs/common';
 import { Cache } from 'cache-manager';
+import { Request } from 'express';
 
 @Resolver()
 export class UsersResolver {
-  constructor(
-    private readonly usersService: UsersService,
-    @Inject(CACHE_MANAGER) private cacheManager: Cache,
-  ) {}
+  constructor(private readonly usersService: UsersService) {}
 
   @Mutation((returns) => UserResponse)
   async register(@Args('userInput') userInput: UserInput) {
@@ -50,9 +49,10 @@ export class UsersResolver {
   }
 
   @Mutation((returns) => UserResponse)
-  async login(@Args('userInput') userInput: UserInput) {
-    const v = await this.cacheManager.get<string>('key1')
-    console.log(v);
+  async login(
+    @Args('userInput') userInput: UserInput,
+    @Context() { req }: { req: Request },
+  ) {
     const user = await this.usersService.findByUserName(userInput.username);
 
     //check whether the username exists
@@ -82,6 +82,8 @@ export class UsersResolver {
       };
       return res;
     }
+
+    req.session.userId = user.id;
 
     return { user };
   }

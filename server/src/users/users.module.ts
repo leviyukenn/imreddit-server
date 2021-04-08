@@ -6,14 +6,10 @@ import { UsersResolver } from './users.resolver';
 import { UsersService } from './users.service';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([User]), CacheModule.register({
-    store: redisStore,
-    host: 'localhost',
-    port: 6379,
-    db:0,
+  imports: [
+    TypeOrmModule.forFeature([User]),
     
-  }),],
-  providers: [UsersService,UsersResolver],
-
+  ],
+  providers: [UsersService, UsersResolver],
 })
 export class UsersModule {}
