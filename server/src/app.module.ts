@@ -17,7 +17,11 @@ import { PostsModule } from './posts/posts.module';
         }),
     }),
     GraphQLModule.forRoot({
-      autoSchemaFile: join(process.cwd(), 'src/schema.gql'),
+      autoSchemaFile: join(process.cwd(), 'src/graphql/schema.gql'),
+      cors: {
+        origin: 'http://localhost:3005',
+        credentials: true,
+      },
     }),
 
     UsersModule,

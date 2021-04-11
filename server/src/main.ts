@@ -6,10 +6,10 @@ import connectRedis from 'connect-redis';
 
 import session from 'express-session';
 
-//merge declaration in order to add arbitrary session data 
+//merge declaration in order to add arbitrary session data
 declare module 'express-session' {
   export interface SessionData {
-    [key: string]: any;
+    userId?: number;
   }
 }
 

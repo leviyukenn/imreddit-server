@@ -35,6 +35,7 @@ type Author {
 }
 
 type Query {
+  loginStatus: UserResponse!
   author(id: Int!): Author!
   posts: [Post!]!
 }
