@@ -13,7 +13,8 @@ import { User } from './user.entity';
 import { UsersService } from './users.service';
 import { UserInput, UserResponse } from './dto/user.dto';
 import * as argon2 from 'argon2';
-import { Request } from 'express';
+import { Request, Response } from 'express';
+import { COOKIE_NAME } from 'src/constant/constant';
 
 @Resolver()
 export class UsersResolver {
@@ -113,5 +114,21 @@ export class UsersResolver {
     req.session.userId = user.id;
 
     return { user };
+  }
+
+  @Mutation((returns) => Boolean)
+  logOut(@Context() { req }: { req: Request }) {
+    return new Promise((resolve) => {
+      req.session.destroy((err) => {
+        if (req.res) {
+          req.res?.clearCookie(COOKIE_NAME);
+        }
+        if (err) {
+          resolve(false);
+        } else {
+          resolve(true);
+        }
+      });
+    });
   }
 }
