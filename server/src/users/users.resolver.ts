@@ -11,48 +11,45 @@ import {
 
 import { User } from './user.entity';
 import { UsersService } from './users.service';
-import { UserInput, UserResponse } from './dto/user.dto';
+import { LoginInput, RegisterInput, UserResponse } from './dto/user.dto';
 import * as argon2 from 'argon2';
 import { Request, Response } from 'express';
 import { COOKIE_NAME } from 'src/constant/constant';
+import { validateRegister } from './util/validateRegister';
+import { sendEmail } from './util/sendEamil';
 
 @Resolver()
 export class UsersResolver {
   constructor(private readonly usersService: UsersService) {}
 
-  @Query((returns) => UserResponse)
-  async loginStatus(@Context() { req }: { req: Request }) {
+  @Query((returns) => User, { nullable: true })
+  async me(@Context() { req }: { req: Request }) {
     if (!req.session.userId) {
-      return {
-        errors: [
-          {
-            field: 'userId',
-            message: 'Not logged in.',
-          },
-        ],
-      };
+      return null;
     }
     const user = await this.usersService.findByUserId(req.session.userId);
     if (!user) {
-      return {
-        errors: [
-          {
-            field: 'userId',
-            message: "Can't find the user info.",
-          },
-        ],
-      };
+      return null;
     }
-    return { user };
+    return user;
+  }
+
+  @Mutation((returns) => Boolean)
+  async forgotPassword() {
+    let isSuccess = true;
+    await sendEmail().catch(() => (isSuccess = false));
+    return isSuccess;
   }
 
   @Mutation((returns) => UserResponse)
   async register(
-    @Args('userInput') userInput: UserInput,
+    @Args('userInput') registerInput: RegisterInput,
     @Context() { req }: { req: Request },
   ) {
-    const user = await this.usersService.findByUserName(userInput.username);
+    const errors = validateRegister(registerInput);
+    if (errors) return { errors };
 
+    let user = await this.usersService.findByUserName(registerInput.username);
     //check whether the username exists
     if (user) {
       const res: UserResponse = {
@@ -66,11 +63,26 @@ export class UsersResolver {
       return res;
     }
 
+    user = await this.usersService.findByEmail(registerInput.email);
+    //check whether the email is taken
+    if (user) {
+      const res: UserResponse = {
+        errors: [
+          {
+            field: 'email',
+            message: 'That email is already registered',
+          },
+        ],
+      };
+      return res;
+    }
+
     const newUser = new User();
     //hash the password
-    const hashedPassword = await argon2.hash(userInput.password);
-    newUser.username = userInput.username;
+    const hashedPassword = await argon2.hash(registerInput.password);
+    newUser.username = registerInput.username;
     newUser.password = hashedPassword;
+    newUser.email = registerInput.email;
     const returnedUser = await this.usersService.save(newUser);
     req.session.userId = returnedUser.id;
     return { user: returnedUser };
@@ -78,7 +90,7 @@ export class UsersResolver {
 
   @Mutation((returns) => UserResponse)
   async login(
-    @Args('userInput') userInput: UserInput,
+    @Args('userInput') userInput: LoginInput,
     @Context() { req }: { req: Request },
   ) {
     const user = await this.usersService.findByUserName(userInput.username);
@@ -117,7 +129,7 @@ export class UsersResolver {
   }
 
   @Mutation((returns) => Boolean)
-  logOut(@Context() { req }: { req: Request }) {
+  logout(@Context() { req }: { req: Request }) {
     return new Promise((resolve) => {
       req.session.destroy((err) => {
         if (req.res) {

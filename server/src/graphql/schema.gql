@@ -7,6 +7,7 @@ type User {
   createdAt: String!
   updatedAt: String!
   username: String!
+  email: String!
   password: String!
 }
 
@@ -35,21 +36,28 @@ type Author {
 }
 
 type Query {
-  loginStatus: UserResponse!
+  me: User
   author(id: Int!): Author!
   posts: [Post!]!
 }
 
 type Mutation {
-  register(userInput: UserInput!): UserResponse!
-  login(userInput: UserInput!): UserResponse!
-  logOut: Boolean!
+  forgotPassword: Boolean!
+  register(userInput: RegisterInput!): UserResponse!
+  login(userInput: LoginInput!): UserResponse!
+  logout: Boolean!
   createPost(createPostInput: CreatePostInput!): Post!
   updatePost(updatePostInput: UpdatePostInput!): Post
   deletePost(id: Int!): Boolean!
 }
 
-input UserInput {
+input RegisterInput {
+  username: String!
+  email: String!
+  password: String!
+}
+
+input LoginInput {
   username: String!
   password: String!
 }
