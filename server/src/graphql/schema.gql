@@ -42,13 +42,18 @@ type Query {
 }
 
 type Mutation {
-  forgotPassword: Boolean!
+  forgotPassword(forgotPasswordInput: ForgotPasswordInput!): Boolean!
   register(userInput: RegisterInput!): UserResponse!
   login(userInput: LoginInput!): UserResponse!
   logout: Boolean!
   createPost(createPostInput: CreatePostInput!): Post!
   updatePost(updatePostInput: UpdatePostInput!): Post
   deletePost(id: Int!): Boolean!
+}
+
+input ForgotPasswordInput {
+  username: String!
+  email: String!
 }
 
 input RegisterInput {

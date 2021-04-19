@@ -23,6 +23,15 @@ export class RegisterInput {
   password!: string;
 }
 
+@InputType()
+export class ForgotPasswordInput {
+  @Field()
+  username!: string;
+
+  @Field()
+  email!: string;
+}
+
 @ObjectType()
 export class UserResponse extends Response {
   @Field(() => User, { nullable: true })

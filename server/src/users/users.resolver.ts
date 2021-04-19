@@ -11,12 +11,22 @@ import {
 
 import { User } from './user.entity';
 import { UsersService } from './users.service';
-import { LoginInput, RegisterInput, UserResponse } from './dto/user.dto';
+import {
+  ForgotPasswordInput,
+  LoginInput,
+  RegisterInput,
+  UserResponse,
+} from './dto/user.dto';
 import * as argon2 from 'argon2';
 import { Request, Response } from 'express';
 import { COOKIE_NAME } from 'src/constant/constant';
-import { validateRegister } from './util/validateRegister';
+import {
+  validateEmail,
+  validatePassword,
+  validateUsername,
+} from './util/validators';
 import { sendEmail } from './util/sendEamil';
+import { FieldError } from 'src/response/response.dto';
 
 @Resolver()
 export class UsersResolver {
@@ -35,10 +45,42 @@ export class UsersResolver {
   }
 
   @Mutation((returns) => Boolean)
-  async forgotPassword() {
-    let isSuccess = true;
-    await sendEmail().catch(() => (isSuccess = false));
-    return isSuccess;
+  async forgotPassword(
+    @Args('forgotPasswordInput') forgotPasswordInput: ForgotPasswordInput,
+  ) {
+    //validate input fields
+    const errors = [
+      ...validateUsername(forgotPasswordInput.username),
+      ...validateEmail(forgotPasswordInput.email),
+    ];
+    if (errors.length !== 0) return false;
+
+    //check whether the matching username and email exist
+    const user = await this.usersService.findByUsernameAndEmail(
+      forgotPasswordInput.username,
+      forgotPasswordInput.email,
+    );
+    if (!user) {
+      return false;
+    }
+
+    const mailOptions: {
+      from: string;
+      to: string;
+      subject: string;
+      text: string;
+      html: string;
+    } = {
+      from: 'ben@ben.com',
+      to: user.email,
+      subject: 'Please change your password',
+      text: 'change your password',
+      html: `<a href="#">change your password`,
+    };
+
+    return await sendEmail(mailOptions)
+      .then(() => true)
+      .catch(() => false);
   }
 
   @Mutation((returns) => UserResponse)
@@ -46,8 +88,12 @@ export class UsersResolver {
     @Args('userInput') registerInput: RegisterInput,
     @Context() { req }: { req: Request },
   ) {
-    const errors = validateRegister(registerInput);
-    if (errors) return { errors };
+    const errors = [
+      ...validateUsername(registerInput.username),
+      ...validatePassword(registerInput.password),
+      ...validateEmail(registerInput.email),
+    ];
+    if (errors.length !== 0) return { errors };
 
     let user = await this.usersService.findByUserName(registerInput.username);
     //check whether the username exists
@@ -93,6 +139,12 @@ export class UsersResolver {
     @Args('userInput') userInput: LoginInput,
     @Context() { req }: { req: Request },
   ) {
+    const errors = [
+      ...validateUsername(userInput.username),
+      ...validatePassword(userInput.password),
+    ];
+    if (errors.length !== 0) return { errors };
+
     const user = await this.usersService.findByUserName(userInput.username);
 
     //check whether the username exists
