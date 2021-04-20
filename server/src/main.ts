@@ -24,7 +24,7 @@ async function bootstrap() {
       name: COOKIE_NAME,
       store: new RedisStore({ client: redisClient, disableTouch: true }),
       cookie: {
-        maxAge: 1000 * 60 * 60 * 24 * 365 * 10, //10 years
+        maxAge: 1000 * 60 * 60 * 24, //1 day
         httpOnly: true,
       },
       saveUninitialized: false,

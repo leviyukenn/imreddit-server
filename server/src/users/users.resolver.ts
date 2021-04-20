@@ -19,7 +19,7 @@ import {
 } from './dto/user.dto';
 import * as argon2 from 'argon2';
 import { Request, Response } from 'express';
-import { COOKIE_NAME } from 'src/constant/constant';
+import { COOKIE_NAME, FORGOT_PASSWORD_PREFIX } from 'src/constant/constant';
 import {
   validateEmail,
   validatePassword,
@@ -27,10 +27,15 @@ import {
 } from './util/validators';
 import { sendEmail } from './util/sendEamil';
 import { FieldError } from 'src/response/response.dto';
+import { RedisCacheService } from 'src/redisCache/redisCache.service';
+import { v4 } from 'uuid';
 
 @Resolver()
 export class UsersResolver {
-  constructor(private readonly usersService: UsersService) {}
+  constructor(
+    private readonly usersService: UsersService,
+    private readonly redisCache: RedisCacheService,
+  ) {}
 
   @Query((returns) => User, { nullable: true })
   async me(@Context() { req }: { req: Request }) {
@@ -42,6 +47,51 @@ export class UsersResolver {
       return null;
     }
     return user;
+  }
+
+  @Mutation((returns) => UserResponse)
+  async changePassword(
+    @Args('token') token: string,
+    @Args('newPassword') newPassword: string,
+  ) {
+    //validate the password field
+    const errors = [...validatePassword(newPassword)];
+    if (errors.length !== 0) return { errors };
+
+    //validate token and get the corresponding data from cache
+    const userId = await this.redisCache
+      .get(FORGOT_PASSWORD_PREFIX + token)
+      .catch();
+
+    if (!userId) {
+      return {
+        errors: [
+          {
+            field: 'token',
+            message: 'The token has been expired.',
+          },
+        ],
+      };
+    }
+
+    const user = await this.usersService.findByUserId(parseInt(userId));
+
+    if (!user) {
+      return {
+        errors: [
+          {
+            field: 'token',
+            message: 'User no longer exits.',
+          },
+        ],
+      };
+    }
+
+    user.password = await argon2.hash(newPassword);
+    await this.usersService.save(user);
+    await this.redisCache.del(FORGOT_PASSWORD_PREFIX + token);
+
+    return { user };
   }
 
   @Mutation((returns) => Boolean)
@@ -64,6 +114,12 @@ export class UsersResolver {
       return false;
     }
 
+    const token = v4();
+
+    this.redisCache.set(FORGOT_PASSWORD_PREFIX + token, user.id.toString(), {
+      ttl: 1000 * 60 * 60 * 24,
+    });
+
     const mailOptions: {
       from: string;
       to: string;
@@ -75,10 +131,10 @@ export class UsersResolver {
       to: user.email,
       subject: 'Please change your password',
       text: 'change your password',
-      html: `<a href="#">change your password`,
+      html: `<a href="http://localhost:3005/change-password/${token}">change your password</a>`,
     };
 
-    return await sendEmail(mailOptions)
+    return sendEmail(mailOptions)
       .then(() => true)
       .catch(() => false);
   }
