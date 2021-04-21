@@ -53,6 +53,7 @@ export class UsersResolver {
   async changePassword(
     @Args('token') token: string,
     @Args('newPassword') newPassword: string,
+    @Context() { req }: { req: Request },
   ) {
     //validate the password field
     const errors = [...validatePassword(newPassword)];
@@ -90,7 +91,7 @@ export class UsersResolver {
     user.password = await argon2.hash(newPassword);
     await this.usersService.save(user);
     await this.redisCache.del(FORGOT_PASSWORD_PREFIX + token);
-
+    req.session.userId = user.id;
     return { user };
   }
 
