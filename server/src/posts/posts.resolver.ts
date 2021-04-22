@@ -46,7 +46,7 @@ export class PostsResolver {
   }
 
   @Mutation((returns) => Boolean)
-  async deletePost(@Args({ name: 'id', type: () => Int }) id: number) {
+  async deletePost(@Args({ name: 'id', type: () => String }) id: string) {
     let deleteSuccess = true;
     await this.postsService.remove(id).catch(() => {
       deleteSuccess = false;

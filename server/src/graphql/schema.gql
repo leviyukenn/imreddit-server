@@ -2,8 +2,18 @@
 # THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
 # ------------------------------------------------------
 
+type Post {
+  id: String!
+  createdAt: String!
+  updatedAt: String!
+  title: String!
+  text: String!
+  points: Int!
+  creatorId: String!
+}
+
 type User {
-  id: Int!
+  id: String!
   createdAt: String!
   updatedAt: String!
   username: String!
@@ -19,13 +29,6 @@ type FieldError {
 type UserResponse {
   errors: [FieldError!]
   user: User
-}
-
-type Post {
-  id: Int!
-  createdAt: String!
-  updatedAt: String!
-  title: String!
 }
 
 type Author {
@@ -49,7 +52,7 @@ type Mutation {
   logout: Boolean!
   createPost(createPostInput: CreatePostInput!): Post!
   updatePost(updatePostInput: UpdatePostInput!): Post
-  deletePost(id: Int!): Boolean!
+  deletePost(id: String!): Boolean!
 }
 
 input ForgotPasswordInput {

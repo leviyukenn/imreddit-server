@@ -6,35 +6,37 @@ import { User } from './user.entity';
 
 @Injectable()
 export class UsersService {
-  constructor(
-    @InjectRepository(User)
-    private readonly usersRepository: Repository<User>,
-  ) {}
+  constructor() {}
 
-  async save(user: User): Promise<User> {
-    return this.usersRepository.save(user);
+  async createUser(userInput: {
+    username: string;
+    password: string;
+    email: string;
+  }): Promise<User> {
+    return User.create(userInput).save();
   }
 
-  // async findAll(): Promise<User[]> {
-  //   return this.usersRepository.find();
-  // }
-  async findByUserId(userId: number) {
-    return this.usersRepository.findOne(userId);
+  async findByUserId(userId: string) {
+    return User.findOne(userId);
   }
 
   async findByUserName(username: string): Promise<User | undefined> {
-    return this.usersRepository.findOne({ username: username });
+    return User.findOne({ username: username });
   }
 
   async findByEmail(email: string): Promise<User | undefined> {
-    return this.usersRepository.findOne({ email: email });
+    return User.findOne({ email: email });
   }
 
   async findByUsernameAndEmail(
     username: string,
     email: string,
   ): Promise<User | undefined> {
-    return this.usersRepository.findOne({ username, email });
+    return User.findOne({ username, email });
+  }
+
+  async updateUserPassword(userId: string, password: string) {
+    return User.update(userId, { password });
   }
 
   // async remove(id: string): Promise<void> {

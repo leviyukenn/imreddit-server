@@ -5,15 +5,18 @@ import {
   CreateDateColumn,
   UpdateDateColumn,
   PrimaryColumn,
+  BaseEntity,
+  OneToMany,
 } from 'typeorm';
-import { Field, Int, ObjectType } from '@nestjs/graphql';
+import { Field, ObjectType } from '@nestjs/graphql';
+import { Post } from 'src/posts/post.entity';
 
 @ObjectType()
 @Entity()
-export class User {
-  @PrimaryGeneratedColumn()
-  @Field((type) => Int)
-  id!: number;
+export class User extends BaseEntity {
+  @PrimaryGeneratedColumn('uuid')
+  @Field((type) => String)
+  id!: string;
 
   @Field((type) => String)
   @CreateDateColumn()
@@ -34,4 +37,7 @@ export class User {
   @Field()
   @Column()
   password!: string;
+
+  @OneToMany(() => Post, (post) => post.creator)
+  posts!: Post[];
 }

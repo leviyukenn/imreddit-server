@@ -75,7 +75,7 @@ export class UsersResolver {
       };
     }
 
-    const user = await this.usersService.findByUserId(parseInt(userId));
+    const user = await this.usersService.findByUserId(userId);
 
     if (!user) {
       return {
@@ -88,8 +88,8 @@ export class UsersResolver {
       };
     }
 
-    user.password = await argon2.hash(newPassword);
-    await this.usersService.save(user);
+    const hashedPassword = await argon2.hash(newPassword);
+    await this.usersService.updateUserPassword(user.id, hashedPassword);
     await this.redisCache.del(FORGOT_PASSWORD_PREFIX + token);
     req.session.userId = user.id;
     return { user };
@@ -117,7 +117,7 @@ export class UsersResolver {
 
     const token = v4();
 
-    this.redisCache.set(FORGOT_PASSWORD_PREFIX + token, user.id.toString(), {
+    this.redisCache.set(FORGOT_PASSWORD_PREFIX + token, user.id, {
       ttl: 1000 * 60 * 60 * 24,
     });
 
@@ -183,10 +183,10 @@ export class UsersResolver {
     const newUser = new User();
     //hash the password
     const hashedPassword = await argon2.hash(registerInput.password);
-    newUser.username = registerInput.username;
-    newUser.password = hashedPassword;
-    newUser.email = registerInput.email;
-    const returnedUser = await this.usersService.save(newUser);
+    const returnedUser = await this.usersService.createUser({
+      ...registerInput,
+      password: hashedPassword,
+    });
     req.session.userId = returnedUser.id;
     return { user: returnedUser };
   }

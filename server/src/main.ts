@@ -10,7 +10,7 @@ import { COOKIE_NAME } from './constant/constant';
 //merge declaration in order to add arbitrary session data
 declare module 'express-session' {
   export interface SessionData {
-    userId?: number;
+    userId?: string;
   }
 }
 
