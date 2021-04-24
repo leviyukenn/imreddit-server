@@ -4,4 +4,7 @@ import { InputType, Field, Int } from '@nestjs/graphql';
 export class CreatePostInput {
   @Field()
   title!: string;
+
+  @Field()
+  text!: string;
 }

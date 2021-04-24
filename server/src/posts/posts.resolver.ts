@@ -1,17 +1,11 @@
-import {
-  Resolver,
-  Query,
-  Args,
-  Int,
-  ResolveField,
-  Parent,
-  Mutation,
-} from '@nestjs/graphql';
+import { Resolver, Query, Args, Mutation } from '@nestjs/graphql';
 
 import { Post } from './post.entity';
 import { PostsService } from './posts.service';
 import { UpdatePostInput } from './dto/update-post.dto';
 import { CreatePostInput } from './dto/create-post.dto';
+import { isAuth } from 'src/guards/isAuth';
+import { UseGuards } from '@nestjs/common';
 
 @Resolver()
 export class PostsResolver {
@@ -22,28 +16,30 @@ export class PostsResolver {
   }
 
   @Mutation((returns) => Post)
+  @UseGuards(isAuth)
   async createPost(@Args('createPostInput') createPostInput: CreatePostInput) {
-    const post = new Post();
-    post.title = createPostInput.title;
-    return this.postsService.save(post);
+    return this.postsService.createPost({
+      ...createPostInput,
+      creatorId: 'd4067b74-565e-4165-b494-832691e8e60d',
+    });
   }
 
-  @Mutation((returns) => Post, { nullable: true })
-  async updatePost(@Args('updatePostInput') updatePostInput: UpdatePostInput) {
-    const { id, title } = updatePostInput;
-    const post = await this.postsService
-      .findOne(id)
-      .catch(() => console.log('查找post出错'));
-    if (!post) {
-      return null;
-    }
+  // @Mutation((returns) => Post, { nullable: true })
+  // async updatePost(@Args('updatePostInput') updatePostInput: UpdatePostInput) {
+  //   const { id, title } = updatePostInput;
+  //   const post = await this.postsService
+  //     .findOne(id)
+  //     .catch(() => console.log('查找post出错'));
+  //   if (!post) {
+  //     return null;
+  //   }
 
-    if (typeof title !== 'undefined') {
-      post.title = title;
-    }
+  //   if (typeof title !== 'undefined') {
+  //     post.title = title;
+  //   }
 
-    return this.postsService.save(post);
-  }
+  //   return this.postsService.save(post);
+  // }
 
   @Mutation((returns) => Boolean)
   async deletePost(@Args({ name: 'id', type: () => String }) id: string) {

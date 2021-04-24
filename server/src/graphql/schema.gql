@@ -51,7 +51,6 @@ type Mutation {
   login(userInput: LoginInput!): UserResponse!
   logout: Boolean!
   createPost(createPostInput: CreatePostInput!): Post!
-  updatePost(updatePostInput: UpdatePostInput!): Post
   deletePost(id: String!): Boolean!
 }
 
@@ -73,9 +72,5 @@ input LoginInput {
 
 input CreatePostInput {
   title: String!
-}
-
-input UpdatePostInput {
-  id: Int!
-  title: String
+  text: String!
 }

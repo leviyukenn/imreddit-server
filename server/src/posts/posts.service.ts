@@ -1,14 +1,17 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
+import { CreatePostInput } from './dto/create-post.dto';
 import { Post } from './post.entity';
 
 @Injectable()
 export class PostsService {
   constructor() {}
 
-  save(post: Post): Promise<Post> {
-    return Post.save(post);
+  createPost(
+    createPostInput: CreatePostInput & { creatorId: string },
+  ): Promise<Post> {
+    return Post.create(createPostInput).save();
   }
 
   async findAll(): Promise<Post[]> {
