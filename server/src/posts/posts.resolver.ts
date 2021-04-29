@@ -1,11 +1,10 @@
-import { Resolver, Query, Args, Mutation } from '@nestjs/graphql';
-
+import { UseGuards } from '@nestjs/common';
+import { Args, Context, Mutation, Query, Resolver } from '@nestjs/graphql';
+import { Request } from 'express';
+import { isAuth } from 'src/guards/isAuth';
+import { CreatePostInput } from './dto/create-post.dto';
 import { Post } from './post.entity';
 import { PostsService } from './posts.service';
-import { UpdatePostInput } from './dto/update-post.dto';
-import { CreatePostInput } from './dto/create-post.dto';
-import { isAuth } from 'src/guards/isAuth';
-import { UseGuards } from '@nestjs/common';
 
 @Resolver()
 export class PostsResolver {
@@ -17,10 +16,13 @@ export class PostsResolver {
 
   @Mutation((returns) => Post)
   @UseGuards(isAuth)
-  async createPost(@Args('createPostInput') createPostInput: CreatePostInput) {
+  async createPost(
+    @Args('createPostInput') createPostInput: CreatePostInput,
+    @Context() { req }: { req: Request },
+  ) {
     return this.postsService.createPost({
       ...createPostInput,
-      creatorId: 'd4067b74-565e-4165-b494-832691e8e60d',
+      creatorId: req.session.userId!,
     });
   }
 
