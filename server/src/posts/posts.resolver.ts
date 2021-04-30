@@ -1,17 +1,41 @@
 import { UseGuards } from '@nestjs/common';
-import { Args, Context, Mutation, Query, Resolver } from '@nestjs/graphql';
+import {
+  Args,
+  Context,
+  Int,
+  Mutation,
+  Query,
+  ResolveField,
+  Resolver,
+  Root,
+} from '@nestjs/graphql';
 import { Request } from 'express';
 import { isAuth } from 'src/guards/isAuth';
+import { FindManyOptions } from 'typeorm/find-options/FindManyOptions';
 import { CreatePostInput } from './dto/create-post.dto';
 import { Post } from './post.entity';
 import { PostsService } from './posts.service';
 
-@Resolver()
+@Resolver(Post)
 export class PostsResolver {
   constructor(private readonly postsService: PostsService) {}
+
+  @ResolveField(() => String)
+  textSnippet(@Root() post: Post) {
+    console.log(post);
+    return post.title.slice(0, 50);
+  }
+
   @Query((returns) => [Post], { name: 'posts' })
-  async getPosts() {
-    return this.postsService.findAll();
+  async getPosts(
+    @Args('limit', { type: () => Int, nullable: true }) limit: number,
+  ) {
+    const options: FindManyOptions<Post> = {};
+    if (limit) {
+      options.take = limit;
+    }
+
+    return this.postsService.find(options);
   }
 
   @Mutation((returns) => Post)

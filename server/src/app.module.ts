@@ -1,12 +1,11 @@
-import { Module, CacheModule } from '@nestjs/common';
+import { Module } from '@nestjs/common';
 import { GraphQLModule } from '@nestjs/graphql';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { Connection, getConnectionOptions } from 'typeorm';
-import { UsersModule } from './users/users.module';
 import { join } from 'path';
+import { Connection, getConnectionOptions } from 'typeorm';
 import { AuthorsModule } from './authors/author.module';
-
 import { PostsModule } from './posts/posts.module';
+import { UsersModule } from './users/users.module';
 
 @Module({
   imports: [
@@ -22,6 +21,7 @@ import { PostsModule } from './posts/posts.module';
         origin: 'http://localhost:3005',
         credentials: true,
       },
+      playground: true,
     }),
 
     UsersModule,

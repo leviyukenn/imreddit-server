@@ -2,6 +2,15 @@
 # THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
 # ------------------------------------------------------
 
+type User {
+  id: String!
+  createdAt: String!
+  updatedAt: String!
+  username: String!
+  email: String!
+  password: String!
+}
+
 type Post {
   id: String!
   createdAt: String!
@@ -10,15 +19,14 @@ type Post {
   text: String!
   points: Int!
   creatorId: String!
+  textSnippet: String!
 }
 
-type User {
-  id: String!
-  createdAt: String!
-  updatedAt: String!
-  username: String!
-  email: String!
-  password: String!
+type Author {
+  id: Int!
+  firstName: String
+  lastName: String
+  posts: [Post!]!
 }
 
 type FieldError {
@@ -31,17 +39,10 @@ type UserResponse {
   user: User
 }
 
-type Author {
-  id: Int!
-  firstName: String
-  lastName: String
-  posts: [Post!]!
-}
-
 type Query {
   me: User
   author(id: Int!): Author!
-  posts: [Post!]!
+  posts(limit: Int): [Post!]!
 }
 
 type Mutation {

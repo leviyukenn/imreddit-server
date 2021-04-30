@@ -1,6 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { FindManyOptions } from 'typeorm/find-options/FindManyOptions';
 import { CreatePostInput } from './dto/create-post.dto';
 import { Post } from './post.entity';
 
@@ -14,8 +13,8 @@ export class PostsService {
     return Post.create(createPostInput).save();
   }
 
-  async findAll(): Promise<Post[]> {
-    return Post.find();
+  async find(options?: FindManyOptions<Post>): Promise<Post[]> {
+    return Post.find(options);
   }
 
   findOne(id: string): Promise<Post | undefined> {
