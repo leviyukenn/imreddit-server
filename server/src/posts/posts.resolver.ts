@@ -11,8 +11,10 @@ import {
 } from '@nestjs/graphql';
 import { Request } from 'express';
 import { isAuth } from 'src/guards/isAuth';
+import { LessThan } from 'typeorm';
 import { FindManyOptions } from 'typeorm/find-options/FindManyOptions';
 import { CreatePostInput } from './dto/create-post.dto';
+import { PaginatedPosts } from './dto/post.dto';
 import { Post } from './post.entity';
 import { PostsService } from './posts.service';
 
@@ -22,20 +24,32 @@ export class PostsResolver {
 
   @ResolveField(() => String)
   textSnippet(@Root() post: Post) {
-    console.log(post);
-    return post.title.slice(0, 50);
+    return post.text.slice(0, 50);
   }
 
-  @Query((returns) => [Post], { name: 'posts' })
+  @Query((returns) => PaginatedPosts, { name: 'posts' })
   async getPosts(
     @Args('limit', { type: () => Int, nullable: true }) limit: number,
-  ) {
-    const options: FindManyOptions<Post> = {};
+    @Args('cursor', { nullable: true }) cursor: string,
+  ): Promise<PaginatedPosts> {
+    const options: FindManyOptions<Post> = {
+      order: { createdAt: 'DESC' },
+      relations: ['creator'],
+    };
     if (limit) {
-      options.take = limit;
+      options.take = limit + 1;
     }
+    if (cursor) {
+      options.where = {
+        createdAt: LessThan(new Date(parseInt(cursor))),
+      };
+    }
+    const posts = await this.postsService.find(options);
 
-    return this.postsService.find(options);
+    return {
+      posts: posts.slice(0, limit),
+      hasMore: posts.length === limit + 1,
+    };
   }
 
   @Mutation((returns) => Post)

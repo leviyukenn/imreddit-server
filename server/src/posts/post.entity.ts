@@ -1,14 +1,16 @@
-import {
-  Column,
-  Entity,
-  PrimaryGeneratedColumn,
-  CreateDateColumn,
-  UpdateDateColumn,
-  BaseEntity,
-  ManyToOne,
-} from 'typeorm';
 import { Field, Int, ObjectType } from '@nestjs/graphql';
 import { User } from 'src/users/user.entity';
+import {
+  BaseEntity,
+  Column,
+  CreateDateColumn,
+  Entity,
+  ManyToOne,
+  OneToMany,
+  PrimaryGeneratedColumn,
+  UpdateDateColumn,
+} from 'typeorm';
+import { Upvote } from 'src/upvotes/upvote.entity';
 
 @ObjectType()
 @Entity()
@@ -41,6 +43,13 @@ export class Post extends BaseEntity {
   @Column()
   creatorId!: string;
 
+  @Field(() => User)
   @ManyToOne(() => User, (user) => user.posts)
   creator!: User;
+
+  @OneToMany(() => Upvote,(upvote) => upvote.post )
+  upvotes!: Upvote[];
+
+  // @OneToMany(() => Post, (post) => post.creator)
+  // posts!: Post[];
 }

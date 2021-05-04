@@ -7,10 +7,13 @@ import { Post } from './post.entity';
 export class PostsService {
   constructor() {}
 
-  createPost(
+  async createPost(
     createPostInput: CreatePostInput & { creatorId: string },
-  ): Promise<Post> {
-    return Post.create(createPostInput).save();
+  ): Promise<Post | undefined> {
+    const savedPost = await Post.create(createPostInput).save();
+    const post = await Post.findOne(savedPost.id, { relations: ['creator'] });
+    console.log(post);
+    return post;
   }
 
   async find(options?: FindManyOptions<Post>): Promise<Post[]> {

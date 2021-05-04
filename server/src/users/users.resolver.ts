@@ -1,44 +1,51 @@
 import {
-  Resolver,
-  Query,
   Args,
-  Int,
-  ResolveField,
-  Parent,
-  Mutation,
   Context,
+  Mutation,
+  Query,
+  ResolveField,
+  Resolver,
+  Root,
 } from '@nestjs/graphql';
-
-import { User } from './user.entity';
-import { UsersService } from './users.service';
+import * as argon2 from 'argon2';
+import { Request } from 'express';
+import { COOKIE_NAME, FORGOT_PASSWORD_PREFIX } from 'src/constant/constant';
+import { RedisCacheService } from 'src/redisCache/redisCache.service';
+import { v4 } from 'uuid';
 import {
   ForgotPasswordInput,
   LoginInput,
   RegisterInput,
   UserResponse,
 } from './dto/user.dto';
-import * as argon2 from 'argon2';
-import { Request, Response } from 'express';
-import { COOKIE_NAME, FORGOT_PASSWORD_PREFIX } from 'src/constant/constant';
+import { User } from './user.entity';
+import { UsersService } from './users.service';
+import { sendEmail } from './util/sendEamil';
 import {
   validateEmail,
   validatePassword,
   validateUsername,
 } from './util/validators';
-import { sendEmail } from './util/sendEamil';
-import { FieldError } from 'src/response/response.dto';
-import { RedisCacheService } from 'src/redisCache/redisCache.service';
-import { v4 } from 'uuid';
 
-@Resolver()
+@Resolver(User)
 export class UsersResolver {
   constructor(
     private readonly usersService: UsersService,
     private readonly redisCache: RedisCacheService,
   ) {}
 
+  @ResolveField()
+  email(@Root() user: User, @Context() { req }: { req: Request }) {
+    //current user can only request his own email
+    if (req.session.userId === user.id) {
+      return user.email;
+    }
+    return '';
+  }
+
   @Query((returns) => User, { nullable: true })
   async me(@Context() { req }: { req: Request }) {
+    console.log('me', req.session.userId);
     if (!req.session.userId) {
       return null;
     }
@@ -233,6 +240,7 @@ export class UsersResolver {
     }
 
     req.session.userId = user.id;
+    console.log('login', req.session.userId);
 
     return { user };
   }

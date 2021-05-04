@@ -1,15 +1,15 @@
-import {
-  Column,
-  Entity,
-  PrimaryGeneratedColumn,
-  CreateDateColumn,
-  UpdateDateColumn,
-  PrimaryColumn,
-  BaseEntity,
-  OneToMany,
-} from 'typeorm';
 import { Field, ObjectType } from '@nestjs/graphql';
 import { Post } from 'src/posts/post.entity';
+import { Upvote } from 'src/upvotes/upvote.entity';
+import {
+  BaseEntity,
+  Column,
+  CreateDateColumn,
+  Entity,
+  OneToMany,
+  PrimaryGeneratedColumn,
+  UpdateDateColumn,
+} from 'typeorm';
 
 @ObjectType()
 @Entity()
@@ -34,10 +34,12 @@ export class User extends BaseEntity {
   @Column({ unique: true })
   email!: string;
 
-  @Field()
   @Column()
   password!: string;
 
   @OneToMany(() => Post, (post) => post.creator)
   posts!: Post[];
+
+  @OneToMany(() => Upvote, (upvote) => upvote.user)
+  upvotes!: Upvote[];
 }

@@ -8,7 +8,6 @@ type User {
   updatedAt: String!
   username: String!
   email: String!
-  password: String!
 }
 
 type Post {
@@ -19,6 +18,7 @@ type Post {
   text: String!
   points: Int!
   creatorId: String!
+  creator: User!
   textSnippet: String!
 }
 
@@ -27,6 +27,11 @@ type Author {
   firstName: String
   lastName: String
   posts: [Post!]!
+}
+
+type PaginatedPosts {
+  posts: [Post!]!
+  hasMore: Boolean!
 }
 
 type FieldError {
@@ -42,7 +47,7 @@ type UserResponse {
 type Query {
   me: User
   author(id: Int!): Author!
-  posts(limit: Int): [Post!]!
+  posts(cursor: String, limit: Int): PaginatedPosts!
 }
 
 type Mutation {
@@ -53,6 +58,7 @@ type Mutation {
   logout: Boolean!
   createPost(createPostInput: CreatePostInput!): Post!
   deletePost(id: String!): Boolean!
+  vote(voteInput: VoteInput!): Int!
 }
 
 input ForgotPasswordInput {
@@ -74,4 +80,9 @@ input LoginInput {
 input CreatePostInput {
   title: String!
   text: String!
+}
+
+input VoteInput {
+  postId: String!
+  value: Int!
 }
