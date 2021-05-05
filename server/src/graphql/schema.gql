@@ -48,6 +48,7 @@ type Query {
   me: User
   author(id: Int!): Author!
   posts(cursor: String, limit: Int): PaginatedPosts!
+  postDetail(postId: String!): Post
 }
 
 type Mutation {

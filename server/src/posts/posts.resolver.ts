@@ -52,6 +52,11 @@ export class PostsResolver {
     };
   }
 
+  @Query((returns) => Post, { nullable: true })
+  async postDetail(@Args('postId') postId: string) {
+    return this.postsService.findOne(postId);
+  }
+
   @Mutation((returns) => Post)
   @UseGuards(isAuth)
   async createPost(

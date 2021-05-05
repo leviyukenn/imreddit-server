@@ -20,8 +20,8 @@ export class PostsService {
     return Post.find(options);
   }
 
-  findOne(id: string): Promise<Post | undefined> {
-    return Post.findOne(id);
+  findOne(postId: string): Promise<Post | undefined> {
+    return Post.findOne(postId, { relations: ['creator'] });
   }
 
   async remove(id: string): Promise<void> {
