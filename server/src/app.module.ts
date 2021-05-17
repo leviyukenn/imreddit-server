@@ -1,6 +1,8 @@
-import { Module } from '@nestjs/common';
+import { MiddlewareConsumer, Module } from '@nestjs/common';
 import { GraphQLModule } from '@nestjs/graphql';
+import { ServeStaticModule } from '@nestjs/serve-static';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { graphqlUploadExpress } from 'graphql-upload';
 import { join } from 'path';
 import { Connection, getConnectionOptions } from 'typeorm';
 import { AuthorsModule } from './authors/author.module';
@@ -27,9 +29,16 @@ import { UsersModule } from './users/users.module';
         credentials: true,
       },
       playground: true,
+      uploads: false,
+    }),
+    ServeStaticModule.forRoot({
+      rootPath: join(__dirname, '..', 'public'),
     }),
   ],
 })
 export class AppModule {
   constructor(private connection: Connection) {}
+  configure(consumer: MiddlewareConsumer) {
+    consumer.apply(graphqlUploadExpress()).forRoutes('graphql');
+  }
 }

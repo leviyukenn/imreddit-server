@@ -10,11 +10,14 @@ import {
   Root,
 } from '@nestjs/graphql';
 import { Request } from 'express';
+import { createWriteStream } from 'fs';
+import { FileUpload, GraphQLUpload } from 'graphql-upload';
 import { isAuth } from 'src/guards/isAuth';
 import { LessThan } from 'typeorm';
 import { FindManyOptions } from 'typeorm/find-options/FindManyOptions';
+import { v4 } from 'uuid';
 import { CreatePostInput } from './dto/create-post.dto';
-import { PaginatedPosts } from './dto/post.dto';
+import { PaginatedPosts, UploadResponse } from './dto/post.dto';
 import { Post } from './post.entity';
 import { PostsService } from './posts.service';
 
@@ -93,5 +96,34 @@ export class PostsResolver {
       deleteSuccess = false;
     });
     return deleteSuccess;
+  }
+
+  @Mutation(() => UploadResponse)
+  async uploadImage(
+    @Args({ name: 'image', type: () => GraphQLUpload })
+    { createReadStream, filename, mimetype }: FileUpload,
+  ): Promise<UploadResponse> {
+    if (!mimetype.includes('image/'))
+      return {
+        errors: [{ field: 'uploadImage', message: 'only accept images.' }],
+      };
+
+    const imageType = mimetype.replace('image/', '');
+    const fileName = `${v4()}.${imageType}`;
+    const filePath = `public/resources/uploadedImages/${fileName}`;
+    const url = filePath.replace('public', '');
+
+    return new Promise(async (resolve, reject) =>
+      createReadStream()
+        .pipe(createWriteStream(filePath))
+        .on('finish', () => resolve({ url }))
+        .on('error', () =>
+          reject({
+            errors: [
+              { field: 'uploadImage', message: 'uploading image failed' },
+            ],
+          }),
+        ),
+    );
   }
 }

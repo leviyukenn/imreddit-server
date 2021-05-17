@@ -29,14 +29,19 @@ type Author {
   posts: [Post!]!
 }
 
+type FieldError {
+  field: String!
+  message: String!
+}
+
 type PaginatedPosts {
   posts: [Post!]!
   hasMore: Boolean!
 }
 
-type FieldError {
-  field: String!
-  message: String!
+type UploadResponse {
+  errors: [FieldError!]
+  url: String
 }
 
 type UserResponse {
@@ -59,6 +64,7 @@ type Mutation {
   logout: Boolean!
   createPost(createPostInput: CreatePostInput!): Post!
   deletePost(id: String!): Boolean!
+  uploadImage(image: Upload!): UploadResponse!
   vote(voteInput: VoteInput!): Int!
 }
 
@@ -82,6 +88,9 @@ input CreatePostInput {
   title: String!
   text: String!
 }
+
+"""The `Upload` scalar type represents a file upload."""
+scalar Upload
 
 input VoteInput {
   postId: String!
