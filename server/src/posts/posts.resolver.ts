@@ -1,19 +1,10 @@
 import { UseGuards } from '@nestjs/common';
-import {
-  Args,
-  Context,
-  Int,
-  Mutation,
-  Query,
-  ResolveField,
-  Resolver,
-  Root,
-} from '@nestjs/graphql';
+import { Args, Context, Int, Mutation, Query, Resolver } from '@nestjs/graphql';
 import { Request } from 'express';
 import { createWriteStream } from 'fs';
 import { FileUpload, GraphQLUpload } from 'graphql-upload';
 import { isAuth } from 'src/guards/isAuth';
-import { LessThan } from 'typeorm';
+import { IsNull, LessThan } from 'typeorm';
 import { FindManyOptions } from 'typeorm/find-options/FindManyOptions';
 import { v4 } from 'uuid';
 import { CreatePostInput } from './dto/create-post.dto';
@@ -25,10 +16,10 @@ import { PostsService } from './posts.service';
 export class PostsResolver {
   constructor(private readonly postsService: PostsService) {}
 
-  @ResolveField(() => String)
-  textSnippet(@Root() post: Post) {
-    return post.text.slice(0, 50);
-  }
+  // @ResolveField(() => String)
+  // textSnippet(@Root() post: Post) {
+  //   return post.text.slice(0, 50);
+  // }
 
   @Query((returns) => PaginatedPosts, { name: 'posts' })
   async getPosts(
@@ -36,8 +27,9 @@ export class PostsResolver {
     @Args('cursor', { nullable: true }) cursor: string,
   ): Promise<PaginatedPosts> {
     const options: FindManyOptions<Post> = {
+      where: { parent: IsNull() },
       order: { createdAt: 'DESC' },
-      relations: ['creator'],
+      relations: ['creator', 'parent'],
     };
     if (limit) {
       options.take = limit + 1;

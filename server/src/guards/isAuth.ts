@@ -8,6 +8,7 @@ export class isAuth implements CanActivate {
     const { req } = GqlExecutionContext.create(context).getContext<{
       req: Request;
     }>();
+
     if (!req.session.userId) {
       return false;
     }

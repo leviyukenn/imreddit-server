@@ -1,16 +1,18 @@
 import { Field, Int, ObjectType } from '@nestjs/graphql';
+import { Upvote } from 'src/upvotes/upvote.entity';
 import { User } from 'src/users/user.entity';
 import {
   BaseEntity,
   Column,
   CreateDateColumn,
   Entity,
+  JoinTable,
   ManyToOne,
   OneToMany,
   PrimaryGeneratedColumn,
+  Tree,
   UpdateDateColumn,
 } from 'typeorm';
-import { Upvote } from 'src/upvotes/upvote.entity';
 
 @ObjectType()
 @Entity()
@@ -39,17 +41,27 @@ export class Post extends BaseEntity {
   @Column({ type: 'int', default: 0 })
   points!: number;
 
-  @Field()
-  @Column()
-  creatorId!: string;
-
   @Field(() => User)
-  @ManyToOne(() => User, (user) => user.posts)
+  @ManyToOne((type) => User, (user) => user.posts, { eager: true })
+  @JoinTable()
   creator!: User;
 
-  @OneToMany(() => Upvote,(upvote) => upvote.post )
+  @OneToMany(() => Upvote, (upvote) => upvote.post)
   upvotes!: Upvote[];
 
-  // @OneToMany(() => Post, (post) => post.creator)
-  // posts!: Post[];
+  @ManyToOne(() => Post, (post) => post.children)
+  // @Field(() => Post, { nullable: true })
+  parent!: Post;
+
+  @Field(() => [Post], { nullable: 'items' })
+  @OneToMany(() => Post, (post) => post.parent)
+  children!: Post[];
+
+  // @TreeParent()
+  // @Field(() => Post, { nullable: true })
+  // parent?: Post;
+
+  // @TreeChildren()
+  // @Field(() => [Post], { nullable: 'items' })
+  // children!: Post[];
 }

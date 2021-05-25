@@ -17,9 +17,8 @@ type Post {
   title: String!
   text: String!
   points: Int!
-  creatorId: String!
   creator: User!
-  textSnippet: String!
+  children: [Post]!
 }
 
 type Author {
@@ -87,6 +86,7 @@ input LoginInput {
 input CreatePostInput {
   title: String!
   text: String!
+  parentId: String
 }
 
 """The `Upload` scalar type represents a file upload."""

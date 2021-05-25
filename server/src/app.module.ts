@@ -22,6 +22,9 @@ import { UsersModule } from './users/users.module';
           autoLoadEntities: true,
         }),
     }),
+    ServeStaticModule.forRoot({
+      rootPath: join(__dirname, '..', 'public'),
+    }),
     GraphQLModule.forRoot({
       autoSchemaFile: join(process.cwd(), 'src/graphql/schema.gql'),
       cors: {
@@ -30,9 +33,6 @@ import { UsersModule } from './users/users.module';
       },
       playground: true,
       uploads: false,
-    }),
-    ServeStaticModule.forRoot({
-      rootPath: join(__dirname, '..', 'public'),
     }),
   ],
 })
