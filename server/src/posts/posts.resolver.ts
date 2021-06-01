@@ -58,6 +58,11 @@ export class PostsResolver {
     @Args('createPostInput') createPostInput: CreatePostInput,
     @Context() { req }: { req: Request },
   ) {
+    if (!createPostInput.title && !createPostInput.parentId)
+      throw new Error('illegal post.');
+
+    console.log(createPostInput);
+
     return this.postsService.createPost({
       ...createPostInput,
       creatorId: req.session.userId!,

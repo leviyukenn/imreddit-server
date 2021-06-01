@@ -14,7 +14,7 @@ type Post {
   id: String!
   createdAt: String!
   updatedAt: String!
-  title: String!
+  title: String
   text: String!
   points: Int!
   creator: User!
@@ -84,7 +84,7 @@ input LoginInput {
 }
 
 input CreatePostInput {
-  title: String!
+  title: String
   text: String!
   parentId: String
 }

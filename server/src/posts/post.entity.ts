@@ -10,7 +10,6 @@ import {
   ManyToOne,
   OneToMany,
   PrimaryGeneratedColumn,
-  Tree,
   UpdateDateColumn,
 } from 'typeorm';
 
@@ -29,8 +28,8 @@ export class Post extends BaseEntity {
   @UpdateDateColumn()
   updatedAt = new Date();
 
-  @Field()
-  @Column()
+  @Field({ nullable: true })
+  @Column({ nullable: true })
   title!: string;
 
   @Field()
