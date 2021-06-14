@@ -14,5 +14,5 @@ export class PaginatedPosts {
 @ObjectType()
 export class UploadResponse extends Response {
   @Field({ nullable: true })
-  url?: string;
+  path?: string;
 }

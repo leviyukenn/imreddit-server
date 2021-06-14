@@ -49,6 +49,7 @@ export class PostsResolver {
 
   @Query((returns) => Post, { nullable: true })
   async postDetail(@Args('postId') postId: string) {
+    console.log(await this.postsService.findOne(postId));
     return this.postsService.findOne(postId);
   }
 
@@ -61,7 +62,8 @@ export class PostsResolver {
     if (!createPostInput.title && !createPostInput.parentId)
       throw new Error('illegal post.');
 
-    console.log(createPostInput);
+    if (createPostInput.title && createPostInput.parentId)
+      throw new Error('illegal post.');
 
     return this.postsService.createPost({
       ...createPostInput,
@@ -108,12 +110,12 @@ export class PostsResolver {
     const imageType = mimetype.replace('image/', '');
     const fileName = `${v4()}.${imageType}`;
     const filePath = `public/resources/uploadedImages/${fileName}`;
-    const url = filePath.replace('public', '');
+    const path = filePath.replace('public', '');
 
     return new Promise(async (resolve, reject) =>
       createReadStream()
         .pipe(createWriteStream(filePath))
-        .on('finish', () => resolve({ url }))
+        .on('finish', () => resolve({ path }))
         .on('error', () =>
           reject({
             errors: [

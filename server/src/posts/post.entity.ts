@@ -1,4 +1,5 @@
 import { Field, Int, ObjectType } from '@nestjs/graphql';
+import { Image } from 'src/posts/image.entity';
 import { Upvote } from 'src/upvotes/upvote.entity';
 import { User } from 'src/users/user.entity';
 import {
@@ -32,8 +33,8 @@ export class Post extends BaseEntity {
   @Column({ nullable: true })
   title!: string;
 
-  @Field()
-  @Column()
+  @Field({ nullable: true })
+  @Column({ nullable: true })
   text!: string;
 
   @Field((type) => Int)
@@ -49,12 +50,15 @@ export class Post extends BaseEntity {
   upvotes!: Upvote[];
 
   @ManyToOne(() => Post, (post) => post.children)
-  // @Field(() => Post, { nullable: true })
   parent!: Post;
 
-  @Field(() => [Post], { nullable: 'items' })
+  @Field(() => [Post])
   @OneToMany(() => Post, (post) => post.parent)
   children!: Post[];
+
+  @Field(() => [Image])
+  @OneToMany(() => Image, (img) => img.post, { eager: true })
+  images!: Image[];
 
   // @TreeParent()
   // @Field(() => Post, { nullable: true })

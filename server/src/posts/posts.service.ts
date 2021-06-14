@@ -1,27 +1,51 @@
 import { Injectable } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { TreeRepository } from 'typeorm';
+import { Connection } from 'typeorm';
 import { FindManyOptions } from 'typeorm/find-options/FindManyOptions';
 import { CreatePostInput } from './dto/create-post.dto';
+import { Image } from './image.entity';
 import { Post } from './post.entity';
 
 @Injectable()
 export class PostsService {
-  constructor(
-    @InjectRepository(Post)
-    private readonly postTreeRepository: TreeRepository<Post>,
-  ) {}
+  constructor(private connection: Connection) {}
 
   async createPost(
     createPostInput: CreatePostInput & { creatorId: string },
   ): Promise<Post | undefined> {
-    const savedPost = await Post.create({
-      ...createPostInput,
-      parent: { id: createPostInput.parentId },
-      creator: { id: createPostInput.creatorId },
-    }).save();
-    const post = await Post.findOne(savedPost.id, { relations: ['creator'] });
-    return post;
+    const queryRunner = this.connection.createQueryRunner();
+
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
+    try {
+      const newPost = await Post.create({
+        ...createPostInput,
+        parent: { id: createPostInput.parentId },
+        creator: { id: createPostInput.creatorId },
+      });
+
+      const savedPost = await queryRunner.manager.save(newPost);
+
+      if (createPostInput.images) {
+        createPostInput.images.forEach(async (img) => {
+          const newImage = await Image.create({
+            ...img,
+            post: { id: savedPost.id },
+          });
+          await queryRunner.manager.save(newImage);
+        });
+      }
+
+      await queryRunner.commitTransaction();
+      const post = Post.findOne(savedPost.id);
+      return post;
+    } catch (err) {
+      // since we have errors lets rollback the changes we made
+      await queryRunner.rollbackTransaction();
+      throw new Error(err);
+    } finally {
+      // you need to release a queryRunner which was manually instantiated
+      await queryRunner.release();
+    }
   }
 
   async find(options?: FindManyOptions<Post>): Promise<Post[]> {

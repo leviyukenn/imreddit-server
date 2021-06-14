@@ -5,7 +5,6 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { graphqlUploadExpress } from 'graphql-upload';
 import { join } from 'path';
 import { Connection, getConnectionOptions } from 'typeorm';
-import { AuthorsModule } from './authors/author.module';
 import { PostsModule } from './posts/posts.module';
 import { UpvotesModule } from './upvotes/upvotes.module';
 import { UsersModule } from './users/users.module';
@@ -13,7 +12,6 @@ import { UsersModule } from './users/users.module';
 @Module({
   imports: [
     UsersModule,
-    AuthorsModule,
     PostsModule,
     UpvotesModule,
     TypeOrmModule.forRootAsync({

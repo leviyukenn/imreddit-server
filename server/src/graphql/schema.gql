@@ -15,17 +15,18 @@ type Post {
   createdAt: String!
   updatedAt: String!
   title: String
-  text: String!
+  text: String
   points: Int!
   creator: User!
-  children: [Post]!
+  children: [Post!]!
+  images: [Image!]!
 }
 
-type Author {
-  id: Int!
-  firstName: String
-  lastName: String
-  posts: [Post!]!
+type Image {
+  id: String!
+  path: String!
+  caption: String
+  link: String
 }
 
 type FieldError {
@@ -40,7 +41,7 @@ type PaginatedPosts {
 
 type UploadResponse {
   errors: [FieldError!]
-  url: String
+  path: String
 }
 
 type UserResponse {
@@ -50,7 +51,6 @@ type UserResponse {
 
 type Query {
   me: User
-  author(id: Int!): Author!
   posts(cursor: String, limit: Int): PaginatedPosts!
   postDetail(postId: String!): Post
 }
@@ -85,8 +85,15 @@ input LoginInput {
 
 input CreatePostInput {
   title: String
-  text: String!
+  text: String
   parentId: String
+  images: [ImageInput!]
+}
+
+input ImageInput {
+  path: String!
+  caption: String
+  link: String
 }
 
 """The `Upload` scalar type represents a file upload."""
