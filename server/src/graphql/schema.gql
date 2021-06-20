@@ -2,12 +2,11 @@
 # THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
 # ------------------------------------------------------
 
-type User {
+type Image {
   id: String!
-  createdAt: String!
-  updatedAt: String!
-  username: String!
-  email: String!
+  path: String!
+  caption: String
+  link: String
 }
 
 type Post {
@@ -22,11 +21,28 @@ type Post {
   images: [Image!]!
 }
 
-type Image {
+type Topic {
   id: String!
-  path: String!
-  caption: String
-  link: String
+  createdAt: String!
+  updatedAt: String!
+  creator: User!
+  title: String!
+}
+
+type User {
+  id: String!
+  createdAt: String!
+  updatedAt: String!
+  username: String!
+  email: String!
+}
+
+type Community {
+  id: String!
+  createdAt: String!
+  updatedAt: String!
+  name: String!
+  description: String!
 }
 
 type FieldError {
@@ -61,10 +77,11 @@ type Mutation {
   register(userInput: RegisterInput!): UserResponse!
   login(userInput: LoginInput!): UserResponse!
   logout: Boolean!
-  createPost(createPostInput: CreatePostInput!): Post!
+  createPost(title: String!): Topic!
   deletePost(id: String!): Boolean!
   uploadImage(image: Upload!): UploadResponse!
   vote(voteInput: VoteInput!): Int!
+  createCommunity(createPostInput: CreatePostInput!): Community!
 }
 
 input ForgotPasswordInput {
@@ -83,6 +100,14 @@ input LoginInput {
   password: String!
 }
 
+"""The `Upload` scalar type represents a file upload."""
+scalar Upload
+
+input VoteInput {
+  postId: String!
+  value: Int!
+}
+
 input CreatePostInput {
   title: String
   text: String
@@ -94,12 +119,4 @@ input ImageInput {
   path: String!
   caption: String
   link: String
-}
-
-"""The `Upload` scalar type represents a file upload."""
-scalar Upload
-
-input VoteInput {
-  postId: String!
-  value: Int!
 }

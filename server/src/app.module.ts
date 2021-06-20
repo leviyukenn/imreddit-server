@@ -5,7 +5,10 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { graphqlUploadExpress } from 'graphql-upload';
 import { join } from 'path';
 import { Connection, getConnectionOptions } from 'typeorm';
+import { CommunityModule } from './communities/community.module';
 import { PostsModule } from './posts/posts.module';
+import { RoleModule } from './role/role.module';
+import { TopicModule } from './topic/topic.module';
 import { UpvotesModule } from './upvotes/upvotes.module';
 import { UsersModule } from './users/users.module';
 
@@ -14,6 +17,9 @@ import { UsersModule } from './users/users.module';
     UsersModule,
     PostsModule,
     UpvotesModule,
+    RoleModule,
+    CommunityModule,
+    TopicModule,
     TypeOrmModule.forRootAsync({
       useFactory: async () =>
         Object.assign(await getConnectionOptions(), {

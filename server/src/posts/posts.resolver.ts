@@ -49,7 +49,6 @@ export class PostsResolver {
 
   @Query((returns) => Post, { nullable: true })
   async postDetail(@Args('postId') postId: string) {
-    console.log(await this.postsService.findOne(postId));
     return this.postsService.findOne(postId);
   }
 

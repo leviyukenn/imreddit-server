@@ -59,12 +59,4 @@ export class Post extends BaseEntity {
   @Field(() => [Image])
   @OneToMany(() => Image, (img) => img.post, { eager: true })
   images!: Image[];
-
-  // @TreeParent()
-  // @Field(() => Post, { nullable: true })
-  // parent?: Post;
-
-  // @TreeChildren()
-  // @Field(() => [Post], { nullable: 'items' })
-  // children!: Post[];
 }

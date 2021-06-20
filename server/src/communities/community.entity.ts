@@ -1,13 +1,12 @@
 import { Field, ObjectType } from '@nestjs/graphql';
-import { Post } from 'src/posts/post.entity';
 import { Role } from 'src/role/role.entity';
 import { Topic } from 'src/topic/topic.entity';
-import { Upvote } from 'src/upvotes/upvote.entity';
 import {
   BaseEntity,
   Column,
   CreateDateColumn,
   Entity,
+  ManyToMany,
   OneToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
@@ -15,7 +14,7 @@ import {
 
 @ObjectType()
 @Entity()
-export class User extends BaseEntity {
+export class Community extends BaseEntity {
   @PrimaryGeneratedColumn('uuid')
   @Field((type) => String)
   id!: string;
@@ -29,25 +28,16 @@ export class User extends BaseEntity {
   updatedAt = new Date();
 
   @Field()
-  @Column({ unique: true })
-  username!: string;
+  @Column()
+  name!: string;
 
   @Field()
-  @Column({ unique: true })
-  email!: string;
-
   @Column()
-  password!: string;
+  description!: string;
 
-  @OneToMany(() => Post, (post) => post.creator)
-  posts!: Post[];
+  @OneToMany(() => Role, (role) => role.community)
+  membersRole!: Role[];
 
-  @OneToMany(() => Topic, (topic) => topic.creator)
+  @ManyToMany(() => Topic, (topic) => topic.communities)
   topics!: Topic[];
-
-  @OneToMany(() => Upvote, (upvote) => upvote.user)
-  upvotes!: Upvote[];
-
-  @OneToMany(() => Role, (role) => role.user)
-  communitiesRole!: Role[];
 }
