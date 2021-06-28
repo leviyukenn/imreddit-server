@@ -18,7 +18,7 @@ import {
   RegisterInput,
   UserResponse,
 } from './dto/user.dto';
-import { User } from './user.entity';
+import { User, UserRole } from './user.entity';
 import { UsersService } from './users.service';
 import { sendEmail } from './util/sendEamil';
 import {
@@ -45,7 +45,6 @@ export class UsersResolver {
 
   @Query((returns) => User, { nullable: true })
   async me(@Context() { req }: { req: Request }) {
-    console.log('me', req.session.userId);
     if (!req.session.userId) {
       return null;
     }
@@ -193,6 +192,7 @@ export class UsersResolver {
     const returnedUser = await this.usersService.createUser({
       ...registerInput,
       password: hashedPassword,
+      role: UserRole.NORMAL_USER,
     });
     req.session.userId = returnedUser.id;
     return { user: returnedUser };
@@ -240,7 +240,6 @@ export class UsersResolver {
     }
 
     req.session.userId = user.id;
-    console.log('login', req.session.userId);
 
     return { user };
   }

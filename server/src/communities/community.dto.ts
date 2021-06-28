@@ -1,4 +1,6 @@
-import { Field, InputType } from '@nestjs/graphql';
+import { Field, InputType, ObjectType } from '@nestjs/graphql';
+import { Response } from '../response/response.dto';
+import { Community } from './community.entity';
 
 @InputType()
 export class CreateCommunityInput {
@@ -8,9 +10,12 @@ export class CreateCommunityInput {
   @Field()
   description!: string;
 
-  @Field()
-  parentId?: string;
-
   @Field(() => [String])
   topicIds!: string[];
+}
+
+@ObjectType()
+export class CommunityResponse extends Response {
+  @Field(() => Community, { nullable: true })
+  community?: Community;
 }

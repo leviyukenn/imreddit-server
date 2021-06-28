@@ -13,6 +13,11 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 
+export enum UserRole {
+  ADMINISTRATOR = 'administrator',
+  NORMAL_USER = 'normalUser',
+}
+
 @ObjectType()
 @Entity()
 export class User extends BaseEntity {
@@ -31,6 +36,10 @@ export class User extends BaseEntity {
   @Field()
   @Column({ unique: true })
   username!: string;
+
+  @Field((type) => String)
+  @Column()
+  role!: UserRole;
 
   @Field()
   @Column({ unique: true })

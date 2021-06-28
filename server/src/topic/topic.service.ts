@@ -13,4 +13,8 @@ export class TopicService {
   async findById(topicId: string) {
     return Topic.findOne(topicId);
   }
+
+  async findAll() {
+    return Topic.find();
+  }
 }

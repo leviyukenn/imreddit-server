@@ -9,18 +9,6 @@ type Image {
   link: String
 }
 
-type Post {
-  id: String!
-  createdAt: String!
-  updatedAt: String!
-  title: String
-  text: String
-  points: Int!
-  creator: User!
-  children: [Post!]!
-  images: [Image!]!
-}
-
 type Topic {
   id: String!
   createdAt: String!
@@ -34,7 +22,21 @@ type User {
   createdAt: String!
   updatedAt: String!
   username: String!
+  role: String!
   email: String!
+}
+
+type Post {
+  id: String!
+  createdAt: String!
+  updatedAt: String!
+  title: String
+  text: String
+  points: Int!
+  creator: User!
+  community: Community!
+  children: [Post!]!
+  images: [Image!]!
 }
 
 type Community {
@@ -43,11 +45,17 @@ type Community {
   updatedAt: String!
   name: String!
   description: String!
+  topics: [Topic!]!
 }
 
 type FieldError {
   field: String!
   message: String!
+}
+
+type CommunityResponse {
+  errors: [FieldError!]
+  community: Community
 }
 
 type PaginatedPosts {
@@ -67,8 +75,9 @@ type UserResponse {
 
 type Query {
   me: User
-  posts(cursor: String, limit: Int): PaginatedPosts!
+  posts(communityId: String, cursor: String, limit: Int): PaginatedPosts!
   postDetail(postId: String!): Post
+  topics: [Topic!]!
 }
 
 type Mutation {
@@ -77,11 +86,12 @@ type Mutation {
   register(userInput: RegisterInput!): UserResponse!
   login(userInput: LoginInput!): UserResponse!
   logout: Boolean!
-  createPost(title: String!): Topic!
+  createPost(createPostInput: CreatePostInput!): Post!
   deletePost(id: String!): Boolean!
   uploadImage(image: Upload!): UploadResponse!
   vote(voteInput: VoteInput!): Int!
-  createCommunity(createPostInput: CreatePostInput!): Community!
+  createCommunity(createCommunityInput: CreateCommunityInput!): CommunityResponse!
+  createTopic(title: String!): Topic!
 }
 
 input ForgotPasswordInput {
@@ -100,14 +110,6 @@ input LoginInput {
   password: String!
 }
 
-"""The `Upload` scalar type represents a file upload."""
-scalar Upload
-
-input VoteInput {
-  postId: String!
-  value: Int!
-}
-
 input CreatePostInput {
   title: String
   text: String
@@ -119,4 +121,18 @@ input ImageInput {
   path: String!
   caption: String
   link: String
+}
+
+"""The `Upload` scalar type represents a file upload."""
+scalar Upload
+
+input VoteInput {
+  postId: String!
+  value: Int!
+}
+
+input CreateCommunityInput {
+  name: String!
+  description: String!
+  topicIds: [String!]!
 }

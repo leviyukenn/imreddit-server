@@ -25,20 +25,31 @@ export class PostsResolver {
   async getPosts(
     @Args('limit', { type: () => Int, nullable: true }) limit: number,
     @Args('cursor', { nullable: true }) cursor: string,
+    @Args('communityId', { nullable: true }) communityId: string,
   ): Promise<PaginatedPosts> {
     const options: FindManyOptions<Post> = {
       where: { parent: IsNull() },
       order: { createdAt: 'DESC' },
       relations: ['creator', 'parent'],
     };
+
     if (limit) {
       options.take = limit + 1;
     }
     if (cursor) {
       options.where = {
+        ...(options.where as Object),
         createdAt: LessThan(new Date(parseInt(cursor))),
       };
     }
+
+    if (communityId) {
+      options.where = {
+        ...(options.where as Object),
+        community: {id:communityId},
+      };
+    }
+
     const posts = await this.postsService.find(options);
 
     return {

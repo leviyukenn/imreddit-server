@@ -10,6 +10,11 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 
+export enum CommunityRole {
+  MODERATOR = 'moderator',
+  MEMBER = 'member',
+}
+
 @ObjectType()
 @Entity()
 export class Role extends BaseEntity {
@@ -30,6 +35,6 @@ export class Role extends BaseEntity {
   joinedAt = new Date();
 
   @Column()
-  @Field()
-  role!: string;
+  @Field((type) => String)
+  role!: CommunityRole;
 }

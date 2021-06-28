@@ -1,4 +1,5 @@
 import { Field, ObjectType } from '@nestjs/graphql';
+import { Post } from 'src/posts/post.entity';
 import { Role } from 'src/role/role.entity';
 import { Topic } from 'src/topic/topic.entity';
 import {
@@ -6,6 +7,7 @@ import {
   Column,
   CreateDateColumn,
   Entity,
+  JoinTable,
   ManyToMany,
   OneToMany,
   PrimaryGeneratedColumn,
@@ -28,7 +30,7 @@ export class Community extends BaseEntity {
   updatedAt = new Date();
 
   @Field()
-  @Column()
+  @Column({ unique: true })
   name!: string;
 
   @Field()
@@ -38,6 +40,11 @@ export class Community extends BaseEntity {
   @OneToMany(() => Role, (role) => role.community)
   membersRole!: Role[];
 
-  @ManyToMany(() => Topic, (topic) => topic.communities)
+  @OneToMany(() => Post, (post) => post.community)
+  posts!: Post[];
+
+  @Field(() => [Topic])
+  @ManyToMany(() => Topic)
+  @JoinTable()
   topics!: Topic[];
 }
