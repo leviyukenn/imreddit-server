@@ -54,7 +54,7 @@ export class PostsService {
 
   async findOne(postId: string): Promise<Post | undefined> {
     return Post.findOne(postId, {
-      relations: ['children'],
+      relations: ['children', 'community'],
     });
   }
 

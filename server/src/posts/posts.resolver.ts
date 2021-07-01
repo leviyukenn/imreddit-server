@@ -25,12 +25,12 @@ export class PostsResolver {
   async getPosts(
     @Args('limit', { type: () => Int, nullable: true }) limit: number,
     @Args('cursor', { nullable: true }) cursor: string,
-    @Args('communityId', { nullable: true }) communityId: string,
+    @Args('communityName', { nullable: true }) communityName: string,
   ): Promise<PaginatedPosts> {
     const options: FindManyOptions<Post> = {
       where: { parent: IsNull() },
       order: { createdAt: 'DESC' },
-      relations: ['creator', 'parent'],
+      relations: ['creator', 'parent', 'community'],
     };
 
     if (limit) {
@@ -42,15 +42,18 @@ export class PostsResolver {
         createdAt: LessThan(new Date(parseInt(cursor))),
       };
     }
+    console.log(communityName);
 
-    if (communityId) {
+    if (communityName) {
       options.where = {
         ...(options.where as Object),
-        community: {id:communityId},
+        community: { name: communityName },
       };
+      console.log(options);
     }
 
     const posts = await this.postsService.find(options);
+    // console.log(posts);
 
     return {
       posts: posts.slice(0, limit),

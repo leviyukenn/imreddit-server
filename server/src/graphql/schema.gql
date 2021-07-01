@@ -75,7 +75,7 @@ type UserResponse {
 
 type Query {
   me: User
-  posts(communityId: String, cursor: String, limit: Int): PaginatedPosts!
+  posts(communityName: String, cursor: String, limit: Int): PaginatedPosts!
   postDetail(postId: String!): Post
   topics: [Topic!]!
 }
