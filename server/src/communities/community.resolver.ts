@@ -1,5 +1,5 @@
 import { UseGuards } from '@nestjs/common';
-import { Args, Context, Mutation, Resolver } from '@nestjs/graphql';
+import { Args, Context, Mutation, Query, Resolver } from '@nestjs/graphql';
 import { Request } from 'express';
 import { isAuth } from 'src/guards/isAuth';
 import { CommunityResponse, CreateCommunityInput } from './community.dto';
@@ -37,5 +37,19 @@ export class CommunityResolver {
         req.session.userId!,
       ),
     };
+  }
+
+  @Query((returns) => [Community], { name: 'communities' })
+  @UseGuards(isAuth)
+  async getCommunities(
+    @Args('cursor', { nullable: true }) cursor: string,
+    @Context() { req }: { req: Request },
+  ): Promise<Community[]> {
+    console.log('getCommunities');
+    const communities = await this.communityService.findByUserId(
+      req.session.userId!,
+    );
+
+    return communities;
   }
 }

@@ -3,6 +3,7 @@ import { Args, Context, Int, Mutation, Query, Resolver } from '@nestjs/graphql';
 import { Request } from 'express';
 import { createWriteStream } from 'fs';
 import { FileUpload, GraphQLUpload } from 'graphql-upload';
+import { CommunityService } from 'src/communities/community.service';
 import { isAuth } from 'src/guards/isAuth';
 import { IsNull, LessThan } from 'typeorm';
 import { FindManyOptions } from 'typeorm/find-options/FindManyOptions';
@@ -14,18 +15,20 @@ import { PostsService } from './posts.service';
 
 @Resolver(Post)
 export class PostsResolver {
-  constructor(private readonly postsService: PostsService) {}
+  constructor(
+    private readonly postsService: PostsService,
+    private readonly communityService: CommunityService,
+  ) {}
 
   // @ResolveField(() => String)
   // textSnippet(@Root() post: Post) {
   //   return post.text.slice(0, 50);
   // }
-
-  @Query((returns) => PaginatedPosts, { name: 'posts' })
-  async getPosts(
+  @Query((returns) => PaginatedPosts, { name: 'communityPosts' })
+  async getCommunityPosts(
     @Args('limit', { type: () => Int, nullable: true }) limit: number,
     @Args('cursor', { nullable: true }) cursor: string,
-    @Args('communityName', { nullable: true }) communityName: string,
+    @Args('communityName') communityName: string,
   ): Promise<PaginatedPosts> {
     const options: FindManyOptions<Post> = {
       where: { parent: IsNull() },
@@ -42,18 +45,46 @@ export class PostsResolver {
         createdAt: LessThan(new Date(parseInt(cursor))),
       };
     }
-    console.log(communityName);
 
     if (communityName) {
+      const community = await this.communityService.findByName(communityName);
+      if (!community) throw Error('no such commnunity');
       options.where = {
         ...(options.where as Object),
-        community: { name: communityName },
+        community: { id: community.id },
       };
-      console.log(options);
     }
 
     const posts = await this.postsService.find(options);
-    // console.log(posts);
+
+    return {
+      posts: posts.slice(0, limit),
+      hasMore: posts.length === limit + 1,
+    };
+  }
+
+  @Query((returns) => PaginatedPosts, { name: 'posts' })
+  async getPosts(
+    @Args('limit', { type: () => Int, nullable: true }) limit: number,
+    @Args('cursor', { nullable: true }) cursor: string,
+  ): Promise<PaginatedPosts> {
+    const options: FindManyOptions<Post> = {
+      where: { parent: IsNull() },
+      order: { createdAt: 'DESC' },
+      relations: ['creator', 'parent', 'community'],
+    };
+
+    if (limit) {
+      options.take = limit + 1;
+    }
+    if (cursor) {
+      options.where = {
+        ...(options.where as Object),
+        createdAt: LessThan(new Date(parseInt(cursor))),
+      };
+    }
+
+    const posts = await this.postsService.find(options);
 
     return {
       posts: posts.slice(0, limit),

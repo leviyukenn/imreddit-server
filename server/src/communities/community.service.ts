@@ -1,12 +1,14 @@
 import { Injectable } from '@nestjs/common';
 import { CommunityRole, Role } from 'src/role/role.entity';
-import { Connection } from 'typeorm';
+import { Connection, getManager } from 'typeorm';
 import { CreateCommunityInput } from './community.dto';
 import { Community } from './community.entity';
 
 @Injectable()
 export class CommunityService {
-  constructor(private connection: Connection) {}
+  constructor(
+    private connection: Connection, // @InjectRepository(Community) // private communityRepository: Repository<Community>,
+  ) {}
 
   async createCommunity(
     createCommunityInput: CreateCommunityInput,
@@ -56,5 +58,14 @@ export class CommunityService {
 
   async findByName(name: string) {
     return Community.findOne({ name });
+  }
+
+  async findByUserId(userId: string) {
+    const communites = await getManager()
+      .createQueryBuilder(Community, 'community')
+      .innerJoin('community.membersRole', 'role')
+      .where('role.userId = :userId', { userId: userId })
+      .getMany();
+    return communites;
   }
 }

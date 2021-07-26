@@ -75,8 +75,10 @@ type UserResponse {
 
 type Query {
   me: User
-  posts(communityName: String, cursor: String, limit: Int): PaginatedPosts!
+  communityPosts(communityName: String!, cursor: String, limit: Int): PaginatedPosts!
+  posts(cursor: String, limit: Int): PaginatedPosts!
   postDetail(postId: String!): Post
+  communities(cursor: String): [Community!]!
   topics: [Topic!]!
 }
 
@@ -89,8 +91,8 @@ type Mutation {
   createPost(createPostInput: CreatePostInput!): Post!
   deletePost(id: String!): Boolean!
   uploadImage(image: Upload!): UploadResponse!
-  vote(voteInput: VoteInput!): Int!
   createCommunity(createCommunityInput: CreateCommunityInput!): CommunityResponse!
+  vote(voteInput: VoteInput!): Int!
   createTopic(title: String!): Topic!
 }
 
@@ -126,13 +128,13 @@ input ImageInput {
 """The `Upload` scalar type represents a file upload."""
 scalar Upload
 
-input VoteInput {
-  postId: String!
-  value: Int!
-}
-
 input CreateCommunityInput {
   name: String!
   description: String!
   topicIds: [String!]!
+}
+
+input VoteInput {
+  postId: String!
+  value: Int!
 }
