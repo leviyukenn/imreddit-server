@@ -1,5 +1,5 @@
 import { Field, ObjectType } from '@nestjs/graphql';
-import { Response } from '../../response/response.dto';
+import { createTypedResponse } from 'src/response/response.dto';
 import { Post } from '../post.entity';
 
 @ObjectType()
@@ -12,7 +12,4 @@ export class PaginatedPosts {
 }
 
 @ObjectType()
-export class UploadResponse extends Response {
-  @Field({ nullable: true })
-  path?: string;
-}
+export class UploadResponse extends createTypedResponse(String) {}

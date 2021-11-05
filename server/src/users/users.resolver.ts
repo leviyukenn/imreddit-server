@@ -10,9 +10,15 @@ import {
 import * as argon2 from 'argon2';
 import { Request } from 'express';
 import { COOKIE_NAME, FORGOT_PASSWORD_PREFIX } from 'src/constant/constant';
+import { ResponseErrorCode } from 'src/constant/errors';
 import { RedisCacheService } from 'src/redisCache/redisCache.service';
+import { IResponse } from 'src/response/response.dto';
+import { createErrorResponse } from 'src/util/createErrors';
+import { InputParameterValidator } from 'src/util/validators';
 import { v4 } from 'uuid';
+import { sendEmail } from '../util/sendEamil';
 import {
+  CompleteResponse,
   ForgotPasswordInput,
   LoginInput,
   RegisterInput,
@@ -20,12 +26,6 @@ import {
 } from './dto/user.dto';
 import { User, UserRole } from './user.entity';
 import { UsersService } from './users.service';
-import { sendEmail } from './util/sendEamil';
-import {
-  validateEmail,
-  validatePassword,
-  validateUsername,
-} from './util/validators';
 
 @Resolver(User)
 export class UsersResolver {
@@ -55,15 +55,19 @@ export class UsersResolver {
     return user;
   }
 
-  @Mutation((returns) => UserResponse)
+  @Mutation(() => CompleteResponse)
   async changePassword(
     @Args('token') token: string,
     @Args('newPassword') newPassword: string,
     @Context() { req }: { req: Request },
-  ) {
+  ): Promise<IResponse<Boolean>> {
     //validate the password field
-    const errors = [...validatePassword(newPassword)];
-    if (errors.length !== 0) return { errors };
+    const validator = InputParameterValidator.object().validatePassword(
+      newPassword,
+    );
+    if (!validator.isValid()) {
+      return validator.getErrorResponse();
+    }
 
     //validate token and get the corresponding data from cache
     const userId = await this.redisCache
@@ -71,46 +75,38 @@ export class UsersResolver {
       .catch();
 
     if (!userId) {
-      return {
-        errors: [
-          {
-            field: 'token',
-            message: 'The token has been expired.',
-          },
-        ],
-      };
+      return createErrorResponse({
+        field: 'validation token',
+        errorCode: ResponseErrorCode.ERR0008,
+      });
     }
 
     const user = await this.usersService.findByUserId(userId);
 
     if (!user) {
-      return {
-        errors: [
-          {
-            field: 'token',
-            message: 'User no longer exits.',
-          },
-        ],
-      };
+      return createErrorResponse({
+        field: 'userId',
+        errorCode: ResponseErrorCode.ERR0009,
+      });
     }
 
     const hashedPassword = await argon2.hash(newPassword);
     await this.usersService.updateUserPassword(user.id, hashedPassword);
     await this.redisCache.del(FORGOT_PASSWORD_PREFIX + token);
     req.session.userId = user.id;
-    return { user };
+    return { data: true };
   }
 
-  @Mutation((returns) => Boolean)
+  @Mutation((returns) => CompleteResponse)
   async forgotPassword(
     @Args('forgotPasswordInput') forgotPasswordInput: ForgotPasswordInput,
-  ) {
-    //validate input fields
-    const errors = [
-      ...validateUsername(forgotPasswordInput.username),
-      ...validateEmail(forgotPasswordInput.email),
-    ];
-    if (errors.length !== 0) return false;
+  ): Promise<IResponse<Boolean>> {
+    const validator = InputParameterValidator.object()
+      .validateUsername(forgotPasswordInput.username)
+      .validateEmail(forgotPasswordInput.email);
+    if (!validator.isValid()) {
+      return validator.getErrorResponse();
+    }
 
     //check whether the matching username and email exist
     const user = await this.usersService.findByUsernameAndEmail(
@@ -118,7 +114,7 @@ export class UsersResolver {
       forgotPasswordInput.email,
     );
     if (!user) {
-      return false;
+      return { data: true };
     }
 
     const token = v4();
@@ -140,53 +136,42 @@ export class UsersResolver {
       text: 'change your password',
       html: `<a href="http://localhost:3005/change-password/${token}">change your password</a>`,
     };
-
-    return sendEmail(mailOptions)
-      .then(() => true)
-      .catch(() => false);
+    await sendEmail(mailOptions).catch();
+    return { data: true };
   }
 
   @Mutation((returns) => UserResponse)
   async register(
     @Args('userInput') registerInput: RegisterInput,
     @Context() { req }: { req: Request },
-  ) {
-    const errors = [
-      ...validateUsername(registerInput.username),
-      ...validatePassword(registerInput.password),
-      ...validateEmail(registerInput.email),
-    ];
-    if (errors.length !== 0) return { errors };
+  ): Promise<IResponse<User>> {
+    //check input parameters
+    const validator = InputParameterValidator.object()
+      .validateUsername(registerInput.username)
+      .validatePassword(registerInput.password)
+      .validateEmail(registerInput.email);
+    if (!validator.isValid()) {
+      return validator.getErrorResponse();
+    }
 
     let user = await this.usersService.findByUserName(registerInput.username);
     //check whether the username exists
     if (user) {
-      const res: UserResponse = {
-        errors: [
-          {
-            field: 'username',
-            message: 'That username is already taken',
-          },
-        ],
-      };
-      return res;
+      return createErrorResponse({
+        field: 'input parameter: username',
+        errorCode: ResponseErrorCode.ERR0010,
+      });
     }
 
     user = await this.usersService.findByEmail(registerInput.email);
     //check whether the email is taken
     if (user) {
-      const res: UserResponse = {
-        errors: [
-          {
-            field: 'email',
-            message: 'That email is already registered',
-          },
-        ],
-      };
-      return res;
+      return createErrorResponse({
+        field: 'input parameter: email',
+        errorCode: ResponseErrorCode.ERR0011,
+      });
     }
 
-    const newUser = new User();
     //hash the password
     const hashedPassword = await argon2.hash(registerInput.password);
     const returnedUser = await this.usersService.createUser({
@@ -195,53 +180,44 @@ export class UsersResolver {
       role: UserRole.NORMAL_USER,
     });
     req.session.userId = returnedUser.id;
-    return { user: returnedUser };
+    return { data: returnedUser };
   }
 
   @Mutation((returns) => UserResponse)
   async login(
     @Args('userInput') userInput: LoginInput,
     @Context() { req }: { req: Request },
-  ) {
-    const errors = [
-      ...validateUsername(userInput.username),
-      ...validatePassword(userInput.password),
-    ];
-    if (errors.length !== 0) return { errors };
+  ): Promise<IResponse<User>> {
+    const validator = InputParameterValidator.object()
+      .validateUsername(userInput.username)
+      .validatePassword(userInput.password);
+    if (!validator.isValid()) {
+      return validator.getErrorResponse();
+    }
 
     const user = await this.usersService.findByUserName(userInput.username);
 
     //check whether the username exists
     if (!user) {
-      const res: UserResponse = {
-        errors: [
-          {
-            field: 'username',
-            message: "that username doesn't exists",
-          },
-        ],
-      };
-      return res;
+      return createErrorResponse({
+        field: 'input parameter: username',
+        errorCode: ResponseErrorCode.ERR0012,
+      });
     }
 
     //validate the password
     const isValid = await argon2.verify(user!.password, userInput.password);
 
     if (!isValid) {
-      const res: UserResponse = {
-        errors: [
-          {
-            field: 'password',
-            message: 'incorrect password',
-          },
-        ],
-      };
-      return res;
+      return createErrorResponse({
+        field: 'input parameter: password',
+        errorCode: ResponseErrorCode.ERR0013,
+      });
     }
 
     req.session.userId = user.id;
 
-    return { user };
+    return { data: user };
   }
 
   @Mutation((returns) => Boolean)

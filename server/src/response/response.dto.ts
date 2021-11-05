@@ -1,16 +1,40 @@
+import { Type } from '@nestjs/common';
 import { Field, ObjectType } from '@nestjs/graphql';
 
-@ObjectType()
-export class FieldError {
-  @Field()
-  field!: string;
+export interface IFieldError {
+  field: string;
 
-  @Field()
-  message!: string;
+  errorCode: string;
+
+  message: string;
 }
 
-@ObjectType()
-export class Response {
-  @Field(() => [FieldError], { nullable: true })
-  errors?: FieldError[];
+export interface IResponse<T> {
+  errors?: IFieldError[];
+
+  data?: T;
+}
+
+export function createTypedResponse<T>(classRef: Type<T>): Type<IResponse<T>> {
+  @ObjectType(`${classRef.name}FieldError`)
+  abstract class FieldError implements IFieldError {
+    @Field()
+    field!: string;
+
+    @Field()
+    errorCode!: string;
+
+    @Field()
+    message!: string;
+  }
+
+  @ObjectType({ isAbstract: true })
+  abstract class TypedResponse implements IResponse<T> {
+    @Field(() => [FieldError], { nullable: true })
+    errors?: FieldError[];
+
+    @Field((type) => classRef, { nullable: true })
+    data?: T;
+  }
+  return TypedResponse as Type<IResponse<T>>;
 }

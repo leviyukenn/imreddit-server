@@ -4,7 +4,10 @@ import { Request } from 'express';
 import { createWriteStream } from 'fs';
 import { FileUpload, GraphQLUpload } from 'graphql-upload';
 import { CommunityService } from 'src/communities/community.service';
+import { ResponseErrorCode } from 'src/constant/errors';
 import { isAuth } from 'src/guards/isAuth';
+import { IResponse } from 'src/response/response.dto';
+import { createErrorResponse } from 'src/util/createErrors';
 import { IsNull, LessThan } from 'typeorm';
 import { FindManyOptions } from 'typeorm/find-options/FindManyOptions';
 import { v4 } from 'uuid';
@@ -103,9 +106,11 @@ export class PostsResolver {
     @Args('createPostInput') createPostInput: CreatePostInput,
     @Context() { req }: { req: Request },
   ) {
+    //a post is not allowed to have no title
     if (!createPostInput.title && !createPostInput.parentId)
       throw new Error('illegal post.');
 
+    //a comment is not allowed to have a title
     if (createPostInput.title && createPostInput.parentId)
       throw new Error('illegal post.');
 
@@ -145,28 +150,33 @@ export class PostsResolver {
   async uploadImage(
     @Args({ name: 'image', type: () => GraphQLUpload })
     { createReadStream, filename, mimetype }: FileUpload,
-  ): Promise<UploadResponse> {
-    if (!mimetype.includes('image/'))
-      return {
-        errors: [{ field: 'uploadImage', message: 'only accept images.' }],
-      };
+  ): Promise<IResponse<String>> {
+    //check if the uploaded file is a image.
+    if (!mimetype.includes('image/')) {
+      return createErrorResponse({
+        field: 'the type of the uploaded image',
+        errorCode: ResponseErrorCode.ERR0001,
+      });
+    }
 
     const imageType = mimetype.replace('image/', '');
-    const fileName = `${v4()}.${imageType}`;
+    const imageId = v4();
+    const fileName = `${imageId}.${imageType}`;
     const filePath = `public/resources/uploadedImages/${fileName}`;
     const path = filePath.replace('public', '');
 
-    return new Promise(async (resolve, reject) =>
+    return new Promise<IResponse<String>>((resolve, reject) =>
       createReadStream()
         .pipe(createWriteStream(filePath))
-        .on('finish', () => resolve({ path }))
-        .on('error', () =>
-          reject({
-            errors: [
-              { field: 'uploadImage', message: 'uploading image failed' },
-            ],
-          }),
-        ),
+        .on('finish', () => resolve({ data: path }))
+        .on('error', () => {
+          reject(
+            createErrorResponse({
+              field: 'upload process',
+              errorCode: ResponseErrorCode.ERR0002,
+            }),
+          );
+        }),
     );
   }
 }

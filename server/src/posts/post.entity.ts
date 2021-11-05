@@ -53,6 +53,7 @@ export class Post extends BaseEntity {
   @Field(() => Community)
   @ManyToOne((type) => Community, (community) => community.posts, {
     nullable: false,
+    eager: true,
   })
   community!: Community;
 

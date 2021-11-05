@@ -1,6 +1,6 @@
 import { Field, InputType, ObjectType } from '@nestjs/graphql';
+import { createTypedResponse } from 'src/response/response.dto';
 import { User } from '../user.entity';
-import { Response } from '../../response/response.dto';
 
 @InputType()
 export class LoginInput {
@@ -33,7 +33,7 @@ export class ForgotPasswordInput {
 }
 
 @ObjectType()
-export class UserResponse extends Response {
-  @Field(() => User, { nullable: true })
-  user?: User;
-}
+export class CompleteResponse extends createTypedResponse(Boolean) {}
+
+@ObjectType()
+export class UserResponse extends createTypedResponse(User) {}

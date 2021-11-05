@@ -19,6 +19,7 @@ export class PostsService {
     try {
       const newPost = await Post.create({
         ...createPostInput,
+        community: { id: createPostInput.communityId },
         parent: { id: createPostInput.parentId },
         creator: { id: createPostInput.creatorId },
       });
@@ -37,6 +38,7 @@ export class PostsService {
 
       await queryRunner.commitTransaction();
       const post = Post.findOne(savedPost.id);
+      console.log(await post);
       return post;
     } catch (err) {
       // since we have errors lets rollback the changes we made

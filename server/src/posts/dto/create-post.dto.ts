@@ -25,4 +25,7 @@ export class CreatePostInput {
 
   @Field(() => [ImageInput], { nullable: true })
   images?: ImageInput[];
+
+  @Field()
+  communityId!: string;
 }

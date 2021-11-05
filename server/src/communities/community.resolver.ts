@@ -1,7 +1,10 @@
 import { UseGuards } from '@nestjs/common';
 import { Args, Context, Mutation, Query, Resolver } from '@nestjs/graphql';
 import { Request } from 'express';
+import { ResponseErrorCode } from 'src/constant/errors';
 import { isAuth } from 'src/guards/isAuth';
+import { IResponse } from 'src/response/response.dto';
+import { createErrorResponse } from 'src/util/createErrors';
 import { CommunityResponse, CreateCommunityInput } from './community.dto';
 import { Community } from './community.entity';
 import { CommunityService } from './community.service';
@@ -15,37 +18,39 @@ export class CommunityResolver {
   async createCommunity(
     @Args('createCommunityInput') createCommunityInput: CreateCommunityInput,
     @Context() { req }: { req: Request },
-  ) {
+  ): Promise<IResponse<Community>> {
     const community = await this.communityService.findByName(
       createCommunityInput.name,
     );
 
     if (community) {
-      return {
-        errors: [
-          {
-            field: 'name',
-            message: 'That community name is already taken',
-          },
-        ],
-      };
+      return createErrorResponse({
+        field: 'input parameter: name',
+        errorCode: ResponseErrorCode.ERR0003,
+      });
     }
 
-    return {
-      community: this.communityService.createCommunity(
-        createCommunityInput,
-        req.session.userId!,
-      ),
-    };
+    const createdCommunity = await this.communityService.createCommunity(
+      createCommunityInput,
+      req.session.userId!,
+    );
+    if (createdCommunity) {
+      return {
+        data: createdCommunity,
+      };
+    } else {
+      return createErrorResponse({
+        field: 'process to create community',
+        errorCode: ResponseErrorCode.ERR0004,
+      });
+    }
   }
 
   @Query((returns) => [Community], { name: 'communities' })
   @UseGuards(isAuth)
   async getCommunities(
-    @Args('cursor', { nullable: true }) cursor: string,
     @Context() { req }: { req: Request },
   ): Promise<Community[]> {
-    console.log('getCommunities');
     const communities = await this.communityService.findByUserId(
       req.session.userId!,
     );

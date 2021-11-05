@@ -1,0 +1,33 @@
+export enum ResponseErrorCode {
+  ERR0001,
+  ERR0002,
+  ERR0003,
+  ERR0004,
+  ERR0005,
+  ERR0006,
+  ERR0007,
+  ERR0008,
+  ERR0009,
+  ERR0010,
+  ERR0011,
+  ERR0012,
+  ERR0013,
+}
+export const responseErrorMessages = new Map<ResponseErrorCode, string>([
+  [ResponseErrorCode.ERR0001, 'only accept image-type file'],
+  [ResponseErrorCode.ERR0002, 'uploading image failed'],
+  [ResponseErrorCode.ERR0003, 'That community name is already taken'],
+  [ResponseErrorCode.ERR0004, 'Failed to create community'],
+  [ResponseErrorCode.ERR0005, 'That email is invalid.'],
+  [
+    ResponseErrorCode.ERR0006,
+    'Letters, numbers, underscores only. Please try again without symbols.',
+  ],
+  [ResponseErrorCode.ERR0007, 'Username must be between 3 and 20 characters'],
+  [ResponseErrorCode.ERR0008, 'The token has been expired.'],
+  [ResponseErrorCode.ERR0009, 'User no longer exits.'],
+  [ResponseErrorCode.ERR0010, 'That username is already taken'],
+  [ResponseErrorCode.ERR0011, 'That email is already registered'],
+  [ResponseErrorCode.ERR0012, "that username doesn't exists"],
+  [ResponseErrorCode.ERR0013, 'incorrect password'],
+]);

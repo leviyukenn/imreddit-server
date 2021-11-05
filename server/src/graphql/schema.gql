@@ -48,14 +48,15 @@ type Community {
   topics: [Topic!]!
 }
 
-type FieldError {
+type CommunityFieldError {
   field: String!
+  errorCode: String!
   message: String!
 }
 
 type CommunityResponse {
-  errors: [FieldError!]
-  community: Community
+  errors: [CommunityFieldError!]
+  data: Community
 }
 
 type PaginatedPosts {
@@ -63,14 +64,37 @@ type PaginatedPosts {
   hasMore: Boolean!
 }
 
+type StringFieldError {
+  field: String!
+  errorCode: String!
+  message: String!
+}
+
 type UploadResponse {
-  errors: [FieldError!]
-  path: String
+  errors: [StringFieldError!]
+  data: String
+}
+
+type BooleanFieldError {
+  field: String!
+  errorCode: String!
+  message: String!
+}
+
+type CompleteResponse {
+  errors: [BooleanFieldError!]
+  data: Boolean
+}
+
+type UserFieldError {
+  field: String!
+  errorCode: String!
+  message: String!
 }
 
 type UserResponse {
-  errors: [FieldError!]
-  user: User
+  errors: [UserFieldError!]
+  data: User
 }
 
 type Query {
@@ -78,13 +102,13 @@ type Query {
   communityPosts(communityName: String!, cursor: String, limit: Int): PaginatedPosts!
   posts(cursor: String, limit: Int): PaginatedPosts!
   postDetail(postId: String!): Post
-  communities(cursor: String): [Community!]!
+  communities: [Community!]!
   topics: [Topic!]!
 }
 
 type Mutation {
-  changePassword(newPassword: String!, token: String!): UserResponse!
-  forgotPassword(forgotPasswordInput: ForgotPasswordInput!): Boolean!
+  changePassword(newPassword: String!, token: String!): CompleteResponse!
+  forgotPassword(forgotPasswordInput: ForgotPasswordInput!): CompleteResponse!
   register(userInput: RegisterInput!): UserResponse!
   login(userInput: LoginInput!): UserResponse!
   logout: Boolean!
@@ -117,6 +141,7 @@ input CreatePostInput {
   text: String
   parentId: String
   images: [ImageInput!]
+  communityId: String!
 }
 
 input ImageInput {

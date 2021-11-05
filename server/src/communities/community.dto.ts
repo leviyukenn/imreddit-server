@@ -1,5 +1,5 @@
 import { Field, InputType, ObjectType } from '@nestjs/graphql';
-import { Response } from '../response/response.dto';
+import { createTypedResponse } from 'src/response/response.dto';
 import { Community } from './community.entity';
 
 @InputType()
@@ -15,7 +15,4 @@ export class CreateCommunityInput {
 }
 
 @ObjectType()
-export class CommunityResponse extends Response {
-  @Field(() => Community, { nullable: true })
-  community?: Community;
-}
+export class CommunityResponse extends createTypedResponse(Community) {}
