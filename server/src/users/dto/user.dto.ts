@@ -33,7 +33,10 @@ export class ForgotPasswordInput {
 }
 
 @ObjectType()
-export class CompleteResponse extends createTypedResponse(Boolean) {}
+export class CompleteResponse extends createTypedResponse(
+  Boolean,
+  'isComplete',
+) {}
 
 @ObjectType()
-export class UserResponse extends createTypedResponse(User) {}
+export class UserResponse extends createTypedResponse(User, 'user') {}

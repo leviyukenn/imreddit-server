@@ -15,4 +15,7 @@ export class CreateCommunityInput {
 }
 
 @ObjectType()
-export class CommunityResponse extends createTypedResponse(Community) {}
+export class CommunityResponse extends createTypedResponse(
+  Community,
+  'community',
+) {}

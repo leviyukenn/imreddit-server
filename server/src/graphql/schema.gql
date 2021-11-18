@@ -48,15 +48,15 @@ type Community {
   topics: [Topic!]!
 }
 
-type CommunityFieldError {
+type FieldError {
   field: String!
   errorCode: String!
   message: String!
 }
 
 type CommunityResponse {
-  errors: [CommunityFieldError!]
-  data: Community
+  errors: [FieldError!]
+  community: Community
 }
 
 type PaginatedPosts {
@@ -64,37 +64,19 @@ type PaginatedPosts {
   hasMore: Boolean!
 }
 
-type StringFieldError {
-  field: String!
-  errorCode: String!
-  message: String!
-}
-
 type UploadResponse {
-  errors: [StringFieldError!]
-  data: String
-}
-
-type BooleanFieldError {
-  field: String!
-  errorCode: String!
-  message: String!
+  errors: [FieldError!]
+  path: String
 }
 
 type CompleteResponse {
-  errors: [BooleanFieldError!]
-  data: Boolean
-}
-
-type UserFieldError {
-  field: String!
-  errorCode: String!
-  message: String!
+  errors: [FieldError!]
+  isComplete: Boolean
 }
 
 type UserResponse {
-  errors: [UserFieldError!]
-  data: User
+  errors: [FieldError!]
+  user: User
 }
 
 type Query {
@@ -102,7 +84,7 @@ type Query {
   communityPosts(communityName: String!, cursor: String, limit: Int): PaginatedPosts!
   posts(cursor: String, limit: Int): PaginatedPosts!
   postDetail(postId: String!): Post
-  communities: [Community!]!
+  communities(userId: String!): [Community!]!
   topics: [Topic!]!
 }
 

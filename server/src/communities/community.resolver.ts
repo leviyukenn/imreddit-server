@@ -49,8 +49,13 @@ export class CommunityResolver {
   @Query((returns) => [Community], { name: 'communities' })
   @UseGuards(isAuth)
   async getCommunities(
+    @Args('userId') userId: string,
     @Context() { req }: { req: Request },
   ): Promise<Community[]> {
+    if (userId != req.session.userId!) {
+      throw Error('invalid request to communities of user');
+    }
+
     const communities = await this.communityService.findByUserId(
       req.session.userId!,
     );

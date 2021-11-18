@@ -14,26 +14,28 @@ export interface IResponse<T> {
 
   data?: T;
 }
+@ObjectType()
+class FieldError implements IFieldError {
+  @Field()
+  field!: string;
 
-export function createTypedResponse<T>(classRef: Type<T>): Type<IResponse<T>> {
-  @ObjectType(`${classRef.name}FieldError`)
-  abstract class FieldError implements IFieldError {
-    @Field()
-    field!: string;
+  @Field()
+  errorCode!: string;
 
-    @Field()
-    errorCode!: string;
+  @Field()
+  message!: string;
+}
 
-    @Field()
-    message!: string;
-  }
-
+export function createTypedResponse<T>(
+  classRef: Type<T>,
+  dataName: string,
+): Type<IResponse<T>> {
   @ObjectType({ isAbstract: true })
   abstract class TypedResponse implements IResponse<T> {
     @Field(() => [FieldError], { nullable: true })
     errors?: FieldError[];
 
-    @Field((type) => classRef, { nullable: true })
+    @Field((type) => classRef, { nullable: true, name: dataName })
     data?: T;
   }
   return TypedResponse as Type<IResponse<T>>;
