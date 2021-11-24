@@ -9,6 +9,12 @@ type Image {
   link: String
 }
 
+type Role {
+  userId: String!
+  joinedAt: String!
+  role: String!
+}
+
 type Topic {
   id: String!
   createdAt: String!
@@ -45,6 +51,7 @@ type Community {
   updatedAt: String!
   name: String!
   description: String!
+  membersRole: [Role!]!
   topics: [Topic!]!
 }
 

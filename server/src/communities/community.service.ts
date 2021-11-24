@@ -61,7 +61,7 @@ export class CommunityService {
   async findByUserId(userId: string) {
     const communites = await getManager()
       .createQueryBuilder(Community, 'community')
-      .innerJoin('community.membersRole', 'role')
+      .innerJoinAndSelect('community.membersRole', 'role')
       .where('role.userId = :userId', { userId: userId })
       .getMany();
     return communites;

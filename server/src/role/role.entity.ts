@@ -18,6 +18,7 @@ export enum CommunityRole {
 @ObjectType()
 @Entity()
 export class Role extends BaseEntity {
+  @Field((type) => String)
   @PrimaryColumn()
   userId!: string;
 

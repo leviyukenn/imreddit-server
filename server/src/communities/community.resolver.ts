@@ -1,5 +1,13 @@
 import { UseGuards } from '@nestjs/common';
-import { Args, Context, Mutation, Query, Resolver } from '@nestjs/graphql';
+import {
+  Args,
+  Context,
+  Mutation,
+  Query,
+  ResolveField,
+  Resolver,
+  Root,
+} from '@nestjs/graphql';
 import { Request } from 'express';
 import { ResponseErrorCode } from 'src/constant/errors';
 import { isAuth } from 'src/guards/isAuth';
@@ -12,6 +20,17 @@ import { CommunityService } from './community.service';
 @Resolver(Community)
 export class CommunityResolver {
   constructor(private readonly communityService: CommunityService) {}
+
+  @ResolveField()
+  async membersRole(
+    @Root() community: Community,
+    @Context() { req }: { req: Request },
+  ) {
+    const filteredMembersRole = community.membersRole.filter(
+      (role) => role.userId === req.session.userId,
+    );
+    return filteredMembersRole;
+  }
 
   @Mutation((returns) => CommunityResponse)
   @UseGuards(isAuth)
