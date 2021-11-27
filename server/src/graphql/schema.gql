@@ -11,6 +11,7 @@ type Image {
 
 type Role {
   userId: String!
+  communityId: String!
   joinedAt: String!
   role: String!
 }
@@ -51,7 +52,6 @@ type Community {
   updatedAt: String!
   name: String!
   description: String!
-  membersRole: [Role!]!
   topics: [Topic!]!
 }
 
@@ -89,9 +89,12 @@ type UserResponse {
 type Query {
   me: User
   communityPosts(communityName: String!, cursor: String, limit: Int): PaginatedPosts!
-  posts(cursor: String, limit: Int): PaginatedPosts!
+  paginatedPosts(cursor: String, limit: Int): PaginatedPosts!
+  allPosts: [Post!]!
   postDetail(postId: String!): Post
-  communities(userId: String!): [Community!]!
+  communities(userId: String): [Community]!
+  community(communityName: String!): Community
+  userRoles(userId: String!): [Role]!
   topics: [Topic!]!
 }
 

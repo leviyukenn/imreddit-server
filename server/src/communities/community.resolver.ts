@@ -21,16 +21,16 @@ import { CommunityService } from './community.service';
 export class CommunityResolver {
   constructor(private readonly communityService: CommunityService) {}
 
-  @ResolveField()
-  async membersRole(
-    @Root() community: Community,
-    @Context() { req }: { req: Request },
-  ) {
-    const filteredMembersRole = community.membersRole.filter(
-      (role) => role.userId === req.session.userId,
-    );
-    return filteredMembersRole;
-  }
+  // @ResolveField()
+  // async membersRole(
+  //   @Root() community: Community,
+  //   @Context() { req }: { req: Request },
+  // ) {
+  //   const filteredMembersRole = community.membersRole.filter(
+  //     (role) => role.userId === req.session.userId,
+  //   );
+  //   return filteredMembersRole;
+  // }
 
   @Mutation((returns) => CommunityResponse)
   @UseGuards(isAuth)
@@ -65,20 +65,25 @@ export class CommunityResolver {
     }
   }
 
-  @Query((returns) => [Community], { name: 'communities' })
-  @UseGuards(isAuth)
+  @Query((returns) => [Community], { name: 'communities', nullable: 'items' })
   async getCommunities(
-    @Args('userId') userId: string,
-    @Context() { req }: { req: Request },
+    @Args('userId', { nullable: true }) userId?: string,
   ): Promise<Community[]> {
-    if (userId != req.session.userId!) {
-      throw Error('invalid request to communities of user');
+    if (userId) {
+      const communities = await this.communityService.findByUserId(userId);
+
+      return communities;
     }
 
-    const communities = await this.communityService.findByUserId(
-      req.session.userId!,
-    );
+    return await this.communityService.findAll();
+  }
 
-    return communities;
+  @Query((returns) => Community, { name: 'community', nullable: true })
+  async getCommunity(
+    @Args('communityName') communityName: string,
+  ): Promise<Community | null> {
+    const community = await this.communityService.findByName(communityName);
+
+    return community || null;
   }
 }

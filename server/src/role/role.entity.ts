@@ -22,6 +22,7 @@ export class Role extends BaseEntity {
   @PrimaryColumn()
   userId!: string;
 
+  @Field((type) => String)
   @PrimaryColumn()
   communityId!: string;
 

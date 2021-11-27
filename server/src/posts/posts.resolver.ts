@@ -66,8 +66,8 @@ export class PostsResolver {
     };
   }
 
-  @Query((returns) => PaginatedPosts, { name: 'posts' })
-  async getPosts(
+  @Query((returns) => PaginatedPosts, { name: 'paginatedPosts' })
+  async getPaginatedPosts(
     @Args('limit', { type: () => Int, nullable: true }) limit: number,
     @Args('cursor', { nullable: true }) cursor: string,
   ): Promise<PaginatedPosts> {
@@ -93,6 +93,19 @@ export class PostsResolver {
       posts: posts.slice(0, limit),
       hasMore: posts.length === limit + 1,
     };
+  }
+
+  @Query((returns) => [Post], { name: 'allPosts' })
+  async getAllPosts(): Promise<Post[]> {
+    const options: FindManyOptions<Post> = {
+      where: { parent: IsNull() },
+      order: { createdAt: 'DESC' },
+      relations: ['creator', 'parent', 'community'],
+    };
+
+    const posts = await this.postsService.find(options);
+
+    return posts;
   }
 
   @Query((returns) => Post, { nullable: true })

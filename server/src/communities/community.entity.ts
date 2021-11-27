@@ -37,7 +37,6 @@ export class Community extends BaseEntity {
   @Column()
   description!: string;
 
-  @Field(() => [Role])
   @OneToMany(() => Role, (role) => role.community)
   membersRole!: Role[];
 
