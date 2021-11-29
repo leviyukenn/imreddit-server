@@ -1,13 +1,5 @@
 import { UseGuards } from '@nestjs/common';
-import {
-  Args,
-  Context,
-  Mutation,
-  Query,
-  ResolveField,
-  Resolver,
-  Root,
-} from '@nestjs/graphql';
+import { Args, Context, Mutation, Query, Resolver } from '@nestjs/graphql';
 import { Request } from 'express';
 import { ResponseErrorCode } from 'src/constant/errors';
 import { isAuth } from 'src/guards/isAuth';
@@ -65,7 +57,7 @@ export class CommunityResolver {
     }
   }
 
-  @Query((returns) => [Community], { name: 'communities', nullable: 'items' })
+  @Query((returns) => [Community], { name: 'communities' })
   async getCommunities(
     @Args('userId', { nullable: true }) userId?: string,
   ): Promise<Community[]> {

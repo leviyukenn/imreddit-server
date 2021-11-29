@@ -92,7 +92,7 @@ type Query {
   paginatedPosts(cursor: String, limit: Int): PaginatedPosts!
   allPosts: [Post!]!
   postDetail(postId: String!): Post
-  communities(userId: String): [Community]!
+  communities(userId: String): [Community!]!
   community(communityName: String!): Community
   userRoles(userId: String!): [Role]!
   topics: [Topic!]!
