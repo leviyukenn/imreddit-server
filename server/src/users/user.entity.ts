@@ -38,7 +38,7 @@ export class User extends BaseEntity {
   username!: string;
 
   @Field((type) => String)
-  @Column()
+  @Column({ default: 'normalUser' })
   role!: UserRole;
 
   @Field()
@@ -46,7 +46,10 @@ export class User extends BaseEntity {
   email!: string;
 
   @Column()
-  password!: string;
+  password?: string;
+
+  @Column({ default: false })
+  isGoogleAuthentication!: boolean;
 
   @OneToMany(() => Post, (post) => post.creator)
   posts!: Post[];

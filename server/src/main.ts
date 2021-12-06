@@ -1,10 +1,8 @@
 import { NestFactory } from '@nestjs/core';
-import { AppModule } from './app.module';
-import redis from 'redis';
-
 import connectRedis from 'connect-redis';
-
 import session from 'express-session';
+import redis from 'redis';
+import { AppModule } from './app.module';
 import { COOKIE_NAME } from './constant/constant';
 
 //merge declaration in order to add arbitrary session data

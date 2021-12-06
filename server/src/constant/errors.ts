@@ -13,6 +13,7 @@ export enum ResponseErrorCode {
   ERR0012,
   ERR0013,
   ERR0014,
+  ERR0015,
 }
 export const responseErrorMessages = new Map<ResponseErrorCode, string>([
   [ResponseErrorCode.ERR0001, 'only accept image-type file'],
@@ -32,4 +33,8 @@ export const responseErrorMessages = new Map<ResponseErrorCode, string>([
   [ResponseErrorCode.ERR0012, "that username doesn't exists"],
   [ResponseErrorCode.ERR0013, 'incorrect password'],
   [ResponseErrorCode.ERR0014, 'No such community.'],
+  [
+    ResponseErrorCode.ERR0015,
+    'This account is authenticated by google. Please log in with google account',
+  ],
 ]);

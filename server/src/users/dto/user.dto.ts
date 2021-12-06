@@ -32,6 +32,12 @@ export class ForgotPasswordInput {
   email!: string;
 }
 
+@InputType()
+export class GoogleAuthenticationInput {
+  @Field()
+  authenticationCode!: string;
+}
+
 @ObjectType()
 export class CompleteResponse extends createTypedResponse(
   Boolean,

@@ -15,6 +15,7 @@ import { RedisCacheService } from 'src/redisCache/redisCache.service';
 import { IResponse } from 'src/response/response.dto';
 import { createErrorResponse } from 'src/util/createErrors';
 import { InputParameterValidator } from 'src/util/validators';
+import { vertificationPassword } from 'src/util/vertification';
 import { v4 } from 'uuid';
 import { sendEmail } from '../util/sendEamil';
 import {
@@ -205,8 +206,18 @@ export class UsersResolver {
       });
     }
 
+    if (user.isGoogleAuthentication) {
+      return createErrorResponse({
+        field: 'input parameter: username',
+        errorCode: ResponseErrorCode.ERR0015,
+      });
+    }
+
     //validate the password
-    const isValid = await argon2.verify(user!.password, userInput.password);
+    const isValid = await vertificationPassword(
+      user.password!,
+      userInput.password,
+    );
 
     if (!isValid) {
       return createErrorResponse({
@@ -234,5 +245,17 @@ export class UsersResolver {
         }
       });
     });
+  }
+
+  @Mutation((returns) => Boolean)
+  async googleAuthentication(
+    @Args('idToken') idToken: string,
+    @Context() { req }: { req: Request },
+  ): Promise<boolean> {
+    this.usersService.googleAuthenticate(idToken);
+
+    //check whether the username exists
+
+    return true;
   }
 }
