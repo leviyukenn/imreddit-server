@@ -104,7 +104,7 @@ type Mutation {
   register(userInput: RegisterInput!): UserResponse!
   login(userInput: LoginInput!): UserResponse!
   logout: Boolean!
-  googleAuthentication(idToken: String!): Boolean!
+  googleAuthentication(idToken: String!): UserResponse!
   createPost(createPostInput: CreatePostInput!): Post!
   deletePost(id: String!): Boolean!
   uploadImage(image: Upload!): UploadResponse!

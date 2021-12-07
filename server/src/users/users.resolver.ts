@@ -247,15 +247,20 @@ export class UsersResolver {
     });
   }
 
-  @Mutation((returns) => Boolean)
+  @Mutation((returns) => UserResponse)
   async googleAuthentication(
     @Args('idToken') idToken: string,
     @Context() { req }: { req: Request },
-  ): Promise<boolean> {
-    this.usersService.googleAuthenticate(idToken);
-
-    //check whether the username exists
-
-    return true;
+  ): Promise<UserResponse> {
+    try {
+      const user = await this.usersService.googleAuthenticate(idToken);
+      req.session.userId = user?.id || '';
+      return { data: user };
+    } catch (err) {
+      return createErrorResponse({
+        field: 'google authentication id token',
+        errorCode: ResponseErrorCode.ERR0016,
+      });
+    }
   }
 }

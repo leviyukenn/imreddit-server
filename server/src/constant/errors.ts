@@ -14,6 +14,7 @@ export enum ResponseErrorCode {
   ERR0013,
   ERR0014,
   ERR0015,
+  ERR0016,
 }
 export const responseErrorMessages = new Map<ResponseErrorCode, string>([
   [ResponseErrorCode.ERR0001, 'only accept image-type file'],
@@ -37,4 +38,5 @@ export const responseErrorMessages = new Map<ResponseErrorCode, string>([
     ResponseErrorCode.ERR0015,
     'This account is authenticated by google. Please log in with google account',
   ],
+  [ResponseErrorCode.ERR0016, 'Invalid google authentication id token.'],
 ]);

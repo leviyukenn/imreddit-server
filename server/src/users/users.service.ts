@@ -51,18 +51,24 @@ export class UsersService {
     });
     const payload = ticket.getPayload();
     if (!payload?.email) throw Error('invalid id token');
-    const user = await this.findByEmail(payload.email!);
+    let user = await this.findByEmail(payload.email!);
 
-    if (!user) {
-      '_' + Math.random().toString(36).substr(2, 9);
+    if (user) return user;
+
+    let userName = payload.name;
+    while (user) {
+      userName = userName || Math.random().toString(36).substr(2, 9);
+      user = await this.findByUserName(userName);
+      if (user) userName = '';
     }
 
-    // const accessToken = await this.oauthClient
-    //   .getToken(authorizationCode)
-    //   .catch((err) => console.log(err));
-    // const tokenInfo = await this.oauthClient.getTokenInfo(authorizationCode);
-    // console.log('accessToken:', accessToken);
-    // console.log('tokenInfo', tokenInfo);
+    user = await User.create({
+      username: userName!,
+      email: payload.email,
+      isGoogleAuthentication: true,
+    }).save();
+
+    return user;
   }
 
   // async remove(id: string): Promise<void> {
