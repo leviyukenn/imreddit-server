@@ -55,11 +55,11 @@ export class UsersService {
 
     if (user) return user;
 
-    let userName = payload.name;
+    let userName = '';
     while (user) {
-      userName = userName || Math.random().toString(36).substr(2, 9);
+      //generate user name randomly
+      userName = Math.random().toString(36).substr(2, 9);
       user = await this.findByUserName(userName);
-      if (user) userName = '';
     }
 
     user = await User.create({

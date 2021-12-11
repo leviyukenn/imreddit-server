@@ -36,7 +36,7 @@ export const responseErrorMessages = new Map<ResponseErrorCode, string>([
   [ResponseErrorCode.ERR0014, 'No such community.'],
   [
     ResponseErrorCode.ERR0015,
-    'This account is authenticated by google. Please log in with google account',
+    'This account is authenticated by google. Please login with google account.',
   ],
   [ResponseErrorCode.ERR0016, 'Invalid google authentication id token.'],
 ]);

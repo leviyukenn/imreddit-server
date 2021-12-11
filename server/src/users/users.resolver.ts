@@ -159,7 +159,7 @@ export class UsersResolver {
     //check whether the username exists
     if (user) {
       return createErrorResponse({
-        field: 'input parameter: username',
+        field: 'username',
         errorCode: ResponseErrorCode.ERR0010,
       });
     }
@@ -168,7 +168,7 @@ export class UsersResolver {
     //check whether the email is taken
     if (user) {
       return createErrorResponse({
-        field: 'input parameter: email',
+        field: 'email',
         errorCode: ResponseErrorCode.ERR0011,
       });
     }
@@ -201,14 +201,14 @@ export class UsersResolver {
     //check whether the username exists
     if (!user) {
       return createErrorResponse({
-        field: 'input parameter: username',
+        field: 'username',
         errorCode: ResponseErrorCode.ERR0012,
       });
     }
 
     if (user.isGoogleAuthentication) {
       return createErrorResponse({
-        field: 'input parameter: username',
+        field: 'username',
         errorCode: ResponseErrorCode.ERR0015,
       });
     }
@@ -221,7 +221,7 @@ export class UsersResolver {
 
     if (!isValid) {
       return createErrorResponse({
-        field: 'input parameter: password',
+        field: 'password',
         errorCode: ResponseErrorCode.ERR0013,
       });
     }
