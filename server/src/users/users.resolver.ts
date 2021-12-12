@@ -11,13 +11,13 @@ import * as argon2 from 'argon2';
 import { Request } from 'express';
 import { COOKIE_NAME, FORGOT_PASSWORD_PREFIX } from 'src/constant/constant';
 import { ResponseErrorCode } from 'src/constant/errors';
+import { MailService } from 'src/mail/mail.service';
 import { RedisCacheService } from 'src/redisCache/redisCache.service';
 import { IResponse } from 'src/response/response.dto';
 import { createErrorResponse } from 'src/util/createErrors';
 import { InputParameterValidator } from 'src/util/validators';
 import { vertificationPassword } from 'src/util/vertification';
 import { v4 } from 'uuid';
-import { sendEmail } from '../util/sendEamil';
 import {
   CompleteResponse,
   ForgotPasswordInput,
@@ -33,6 +33,7 @@ export class UsersResolver {
   constructor(
     private readonly usersService: UsersService,
     private readonly redisCache: RedisCacheService,
+    private readonly mailService: MailService,
   ) {}
 
   @ResolveField()
@@ -56,12 +57,12 @@ export class UsersResolver {
     return user;
   }
 
-  @Mutation(() => CompleteResponse)
+  @Mutation(() => UserResponse)
   async changePassword(
     @Args('token') token: string,
     @Args('newPassword') newPassword: string,
     @Context() { req }: { req: Request },
-  ): Promise<IResponse<Boolean>> {
+  ): Promise<IResponse<User>> {
     //validate the password field
     const validator = InputParameterValidator.object().validatePassword(
       newPassword,
@@ -77,7 +78,7 @@ export class UsersResolver {
 
     if (!userId) {
       return createErrorResponse({
-        field: 'validation token',
+        field: 'password',
         errorCode: ResponseErrorCode.ERR0008,
       });
     }
@@ -86,7 +87,7 @@ export class UsersResolver {
 
     if (!user) {
       return createErrorResponse({
-        field: 'userId',
+        field: 'password',
         errorCode: ResponseErrorCode.ERR0009,
       });
     }
@@ -95,7 +96,7 @@ export class UsersResolver {
     await this.usersService.updateUserPassword(user.id, hashedPassword);
     await this.redisCache.del(FORGOT_PASSWORD_PREFIX + token);
     req.session.userId = user.id;
-    return { data: true };
+    return { data: user };
   }
 
   @Mutation((returns) => CompleteResponse)
@@ -124,20 +125,20 @@ export class UsersResolver {
       ttl: 1000 * 60 * 60 * 24,
     });
 
-    const mailOptions: {
-      from: string;
-      to: string;
-      subject: string;
-      text: string;
-      html: string;
-    } = {
-      from: 'ben@ben.com',
-      to: user.email,
-      subject: 'Please change your password',
-      text: 'change your password',
-      html: `<a href="http://localhost:3005/change-password/${token}">change your password</a>`,
-    };
-    await sendEmail(mailOptions).catch();
+    // const mailOptions: {
+    //   from: string;
+    //   to: string;
+    //   subject: string;
+    //   text: string;
+    //   html: string;
+    // } = {
+    //   from: 'ben@ben.com',
+    //   to: user.email,
+    //   subject: 'Please change your password',
+    //   text: 'change your password',
+    //   html: `<a href="http://localhost:3005/change-password/${token}">change your password</a>`,
+    // };
+    await this.mailService.sendUserConfirmation(user, token).catch();
     return { data: true };
   }
 

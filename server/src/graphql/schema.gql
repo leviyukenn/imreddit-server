@@ -99,7 +99,7 @@ type Query {
 }
 
 type Mutation {
-  changePassword(newPassword: String!, token: String!): CompleteResponse!
+  changePassword(newPassword: String!, token: String!): UserResponse!
   forgotPassword(forgotPasswordInput: ForgotPasswordInput!): CompleteResponse!
   register(userInput: RegisterInput!): UserResponse!
   login(userInput: LoginInput!): UserResponse!

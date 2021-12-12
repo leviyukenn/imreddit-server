@@ -13,6 +13,7 @@ import { RoleModule } from './role/role.module';
 import { TopicModule } from './topic/topic.module';
 import { UpvotesModule } from './upvotes/upvotes.module';
 import { UsersModule } from './users/users.module';
+import { MailModule } from './mail/mail.module';
 
 @Module({
   imports: [
@@ -48,6 +49,7 @@ import { UsersModule } from './users/users.module';
       playground: true,
       uploads: false,
     }),
+    MailModule,
   ],
 })
 export class AppModule {
