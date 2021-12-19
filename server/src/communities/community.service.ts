@@ -55,7 +55,7 @@ export class CommunityService {
   }
 
   async findByName(name: string) {
-    return Community.findOne({ name });
+    return Community.findOne({ name }, { relations: ['topics'] });
   }
 
   async findAll() {
