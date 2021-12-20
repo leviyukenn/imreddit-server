@@ -1,4 +1,4 @@
-import { Field, ObjectType } from '@nestjs/graphql';
+import { Field, Int, ObjectType } from '@nestjs/graphql';
 import { Post } from 'src/posts/post.entity';
 import { Role } from 'src/role/role.entity';
 import { Topic } from 'src/topic/topic.entity';
@@ -47,4 +47,7 @@ export class Community extends BaseEntity {
   @ManyToMany(() => Topic)
   @JoinTable()
   topics!: Topic[];
+
+  @Field(() => Int)
+  totalMemberships!: number;
 }

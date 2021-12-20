@@ -53,6 +53,7 @@ type Community {
   name: String!
   description: String!
   topics: [Topic!]!
+  totalMemberships: Int!
 }
 
 type FieldError {

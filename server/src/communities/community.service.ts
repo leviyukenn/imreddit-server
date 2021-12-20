@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { CommunityRole, Role } from 'src/role/role.entity';
-import { Connection, getManager } from 'typeorm';
+import { Connection, getManager, getRepository } from 'typeorm';
 import { CreateCommunityInput } from './community.dto';
 import { Community } from './community.entity';
 
@@ -60,6 +60,16 @@ export class CommunityService {
 
   async findAll() {
     return Community.find({ relations: ['topics'] });
+  }
+
+  async countMemberships(communityId: string) {
+    const { count } = await getRepository(Community)
+      .createQueryBuilder('community')
+      .innerJoin('community.membersRole', 'role')
+      .select('count(role.userId)', 'count')
+      .where('community.id = :id', { id: communityId })
+      .getRawOne();
+    return count;
   }
 
   async findByUserId(userId: string) {

@@ -1,5 +1,13 @@
 import { UseGuards } from '@nestjs/common';
-import { Args, Context, Mutation, Query, Resolver } from '@nestjs/graphql';
+import {
+  Args,
+  Context,
+  Mutation,
+  Query,
+  ResolveField,
+  Resolver,
+  Root,
+} from '@nestjs/graphql';
 import { Request } from 'express';
 import { ResponseErrorCode } from 'src/constant/errors';
 import { isAuth } from 'src/guards/isAuth';
@@ -23,6 +31,14 @@ export class CommunityResolver {
   //   );
   //   return filteredMembersRole;
   // }
+
+  @ResolveField()
+  async totalMemberships(@Root() community: Community) {
+    const totalMemberships = await this.communityService.countMemberships(
+      community.id,
+    );
+    return totalMemberships;
+  }
 
   @Mutation((returns) => CommunityResponse)
   @UseGuards(isAuth)
