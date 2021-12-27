@@ -96,6 +96,7 @@ type Query {
   communities(userId: String): [Community!]!
   community(communityName: String!): Community
   userRoles(userId: String!): [Role]!
+  userRole(communityId: String!, userId: String!): Role
   topics: [Topic!]!
 }
 

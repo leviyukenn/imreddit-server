@@ -12,4 +12,32 @@ export class RoleResolver {
 
     return userRoles;
   }
+
+  @Query((returns) => Role, { name: 'userRole', nullable: true })
+  async getUserRole(
+    @Args('userId') userId: string,
+    @Args('communityId') communityId: string,
+  ): Promise<Role | undefined> {
+    const userRole = await this.roleService.findByUserIdAndCommunityId(
+      userId,
+      communityId,
+    );
+
+    return userRole;
+  }
+
+  // @Mutation((returns) => RoleResponse)
+  // @UseGuards(isAuth)
+  // async joinCommunity(
+  //   @Args('communityId') communityId: string,
+  //   @Args('userId') userId: string,
+  //   @Context() { req }: { req: Request },
+  // ): Promise<IResponse<RoleResponse>> {
+  //   if (userId !== req.session.userId) {
+  //     return createErrorResponse({
+  //       field: 'userId',
+  //       errorCode: ResponseErrorCode.ERR0017,
+  //     });
+  //   }
+  // }
 }

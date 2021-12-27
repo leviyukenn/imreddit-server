@@ -52,7 +52,7 @@ export class CommunityResolver {
 
     if (community) {
       return createErrorResponse({
-        field: 'input parameter: name',
+        field: 'name',
         errorCode: ResponseErrorCode.ERR0003,
       });
     }
