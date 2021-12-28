@@ -14,11 +14,45 @@ export class RoleService {
     return Role.findOne({ userId, communityId });
   }
 
-  // async joinCommunity(userInput: { username: string;
-  //   password: string;
-  //   email: string;
-  //   role: UserRole;
-  // }): Promise<User> {
-  //   return User.create(userInput).save();
-  // }
+  async joinCommunity(
+    userId: string,
+    communityId: string,
+  ): Promise<Role | undefined> {
+    const newRole = await Role.create({
+      userId,
+      communityId,
+      isMember: true,
+      isModerator: false,
+    });
+    await this.connection
+      .createQueryBuilder()
+      .insert()
+      .into(Role)
+      .values(newRole)
+      .onConflict(
+        `("userId", "communityId") DO UPDATE SET "isMember" = :isMember, "joinedAt" = :joinedAt`,
+      )
+      .setParameter('isMember', true)
+      .setParameter('joinedAt', new Date())
+      .execute();
+
+    return this.findByUserIdAndCommunityId(userId, communityId);
+  }
+
+  async leaveCommunity(
+    userId: string,
+    communityId: string,
+  ): Promise<Role | undefined> {
+    await this.connection
+      .createQueryBuilder()
+      .update(Role)
+      .set({ isMember: false })
+      .where('userId = :userId AND communityId = :communityId', {
+        userId,
+        communityId,
+      })
+      .execute();
+
+    return this.findByUserIdAndCommunityId(userId, communityId);
+  }
 }

@@ -1,14 +1,7 @@
 import { Field, ObjectType } from '@nestjs/graphql';
 import { Community } from 'src/communities/community.entity';
 import { User } from 'src/users/user.entity';
-import {
-  BaseEntity,
-  Column,
-  Entity,
-  ManyToOne,
-  PrimaryColumn,
-  UpdateDateColumn,
-} from 'typeorm';
+import { BaseEntity, Column, Entity, ManyToOne, PrimaryColumn } from 'typeorm';
 
 export enum CommunityRole {
   MODERATOR = 'moderator',
@@ -33,10 +26,14 @@ export class Role extends BaseEntity {
   user!: User;
 
   @Field((type) => String)
-  @UpdateDateColumn()
-  joinedAt = new Date();
+  @Column({ default: () => 'NOW()' })
+  joinedAt!: Date;
 
   @Column()
-  @Field((type) => String)
-  role!: CommunityRole;
+  @Field((type) => Boolean, { defaultValue: false })
+  isMember!: boolean;
+
+  @Column()
+  @Field((type) => Boolean, { defaultValue: false })
+  isModerator!: boolean;
 }

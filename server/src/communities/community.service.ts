@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { CommunityRole, Role } from 'src/role/role.entity';
+import { Role } from 'src/role/role.entity';
 import { Connection, getManager, getRepository } from 'typeorm';
 import { CreateCommunityInput } from './community.dto';
 import { Community } from './community.entity';
@@ -36,7 +36,8 @@ export class CommunityService {
       const newRole = await Role.create({
         userId,
         communityId: savedCommunity.id,
-        role: CommunityRole.MODERATOR,
+        isMember: true,
+        isModerator: true,
       });
 
       await queryRunner.manager.save(newRole);

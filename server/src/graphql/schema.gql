@@ -13,7 +13,8 @@ type Role {
   userId: String!
   communityId: String!
   joinedAt: String!
-  role: String!
+  isMember: Boolean!
+  isModerator: Boolean!
 }
 
 type Topic {
@@ -77,6 +78,11 @@ type UploadResponse {
   path: String
 }
 
+type RoleResponse {
+  errors: [FieldError!]
+  role: Role
+}
+
 type CompleteResponse {
   errors: [FieldError!]
   isComplete: Boolean
@@ -112,6 +118,8 @@ type Mutation {
   uploadImage(image: Upload!): UploadResponse!
   createCommunity(createCommunityInput: CreateCommunityInput!): CommunityResponse!
   vote(voteInput: VoteInput!): Int!
+  joinCommunity(userId: String!, communityId: String!): RoleResponse!
+  leaveCommunity(userId: String!, communityId: String!): RoleResponse!
   createTopic(title: String!): Topic!
 }
 
