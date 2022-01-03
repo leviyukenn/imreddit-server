@@ -17,7 +17,9 @@ export class RoleResolver {
   async getUserRoles(@Args('userId') userId: string): Promise<Role[]> {
     const userRoles = await this.roleService.findByUserId(userId);
 
-    return userRoles;
+    return userRoles.filter(
+      (userRole) => userRole.isMember || userRole.isModerator,
+    );
   }
 
   @Query((returns) => Role, { name: 'userRole', nullable: true })

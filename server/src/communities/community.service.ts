@@ -68,7 +68,10 @@ export class CommunityService {
       .createQueryBuilder('community')
       .innerJoin('community.membersRole', 'role')
       .select('count(role.userId)', 'count')
-      .where('community.id = :id', { id: communityId })
+      .where('community.id = :id AND role.isMember = :isMember', {
+        id: communityId,
+        isMember: true,
+      })
       .getRawOne();
     return count;
   }
