@@ -59,6 +59,10 @@ export class CommunityService {
     return Community.findOne({ name }, { relations: ['topics'] });
   }
 
+  async findById(communityId: string) {
+    return Community.findOne({ id: communityId }, { relations: ['topics'] });
+  }
+
   async findAll() {
     return Community.find({ relations: ['topics'] });
   }
@@ -83,5 +87,18 @@ export class CommunityService {
       .where('role.userId = :userId', { userId: userId })
       .getMany();
     return communites;
+  }
+
+  async editCommunityDescription(communityId: string, description: string) {
+    const result = await this.connection
+      .createQueryBuilder()
+      .update(Community)
+      .set({ description })
+      .where('id = :communityId', {
+        communityId,
+      })
+      .execute();
+
+    return result.affected;
   }
 }

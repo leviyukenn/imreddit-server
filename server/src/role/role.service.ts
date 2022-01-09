@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+import { Community } from 'src/communities/community.entity';
 import { Connection } from 'typeorm';
 import { Role } from './role.entity';
 
@@ -55,4 +56,5 @@ export class RoleService {
 
     return this.findByUserIdAndCommunityId(userId, communityId);
   }
+
 }

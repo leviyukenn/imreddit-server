@@ -9,14 +9,6 @@ type Image {
   link: String
 }
 
-type Role {
-  userId: String!
-  communityId: String!
-  joinedAt: String!
-  isMember: Boolean!
-  isModerator: Boolean!
-}
-
 type Topic {
   id: String!
   createdAt: String!
@@ -57,10 +49,23 @@ type Community {
   totalMemberships: Int!
 }
 
+type Role {
+  userId: String!
+  communityId: String!
+  joinedAt: String!
+  isMember: Boolean!
+  isModerator: Boolean!
+}
+
 type FieldError {
   field: String!
   errorCode: String!
   message: String!
+}
+
+type RoleResponse {
+  errors: [FieldError!]
+  role: Role
 }
 
 type CommunityResponse {
@@ -76,11 +81,6 @@ type PaginatedPosts {
 type UploadResponse {
   errors: [FieldError!]
   path: String
-}
-
-type RoleResponse {
-  errors: [FieldError!]
-  role: Role
 }
 
 type CompleteResponse {
@@ -117,9 +117,10 @@ type Mutation {
   deletePost(id: String!): Boolean!
   uploadImage(image: Upload!): UploadResponse!
   createCommunity(createCommunityInput: CreateCommunityInput!): CommunityResponse!
-  vote(voteInput: VoteInput!): Int!
+  editCommunityDescription(description: String!, communityId: String!): CommunityResponse!
   joinCommunity(userId: String!, communityId: String!): RoleResponse!
   leaveCommunity(userId: String!, communityId: String!): RoleResponse!
+  vote(voteInput: VoteInput!): Int!
   createTopic(title: String!): Topic!
 }
 

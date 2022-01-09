@@ -11,8 +11,10 @@ import {
 import { Request } from 'express';
 import { ResponseErrorCode } from 'src/constant/errors';
 import { isAuth } from 'src/guards/isAuth';
+import { isModerator } from 'src/guards/isModerator';
 import { IResponse } from 'src/response/response.dto';
 import { createErrorResponse } from 'src/util/createErrors';
+import { InputParameterValidator } from 'src/util/validators';
 import { CommunityResponse, CreateCommunityInput } from './community.dto';
 import { Community } from './community.entity';
 import { CommunityService } from './community.service';
@@ -93,5 +95,41 @@ export class CommunityResolver {
     const community = await this.communityService.findByName(communityName);
 
     return community || null;
+  }
+
+  @Mutation((returns) => CommunityResponse)
+  @UseGuards(isModerator)
+  async editCommunityDescription(
+    @Args('communityId') communityId: string,
+    @Args('description') description: string,
+    @Context() { req }: { req: Request },
+  ): Promise<IResponse<Community>> {
+    const validator = InputParameterValidator.object().validateCommunityDescription(
+      description,
+    );
+    if (!validator.isValid()) {
+      return validator.getErrorResponse();
+    }
+
+    const updatedRows = await this.communityService.editCommunityDescription(
+      communityId,
+      description,
+    );
+    if (!updatedRows) {
+      return createErrorResponse({
+        field: 'description',
+        errorCode: ResponseErrorCode.ERR0019,
+      });
+    }
+
+    const community = await this.communityService.findById(communityId);
+    if (!community) {
+      return createErrorResponse({
+        field: 'communityId',
+        errorCode: ResponseErrorCode.ERR0014,
+      });
+    }
+
+    return { data: community };
   }
 }

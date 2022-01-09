@@ -15,56 +15,56 @@ export class InputParameterValidator {
 
   validateEmail(email: string) {
     if (!/\w+([-+.]\w+)*@\w+([-.]\w+)*\.\w+([-.]\w+)*/.test(email)) {
-      return new InputParameterValidator([
-        ...this.fieldErrors,
-        {
-          field: 'input parameter: email',
-          errorCode: ResponseErrorCode.ERR0005,
-        },
-      ]);
+      this.fieldErrors.push({
+        field: 'email',
+        errorCode: ResponseErrorCode.ERR0005,
+      });
     }
-    return new InputParameterValidator(this.fieldErrors);
+    return this;
   }
 
   validatePassword(password: string) {
     if (!/^\w+$/.test(password)) {
-      return new InputParameterValidator([
-        ...this.fieldErrors,
-        {
-          field: 'input parameter: password',
-          errorCode: ResponseErrorCode.ERR0006,
-        },
-      ]);
+      this.fieldErrors.push({
+        field: 'password',
+        errorCode: ResponseErrorCode.ERR0006,
+      });
     }
-    return new InputParameterValidator(this.fieldErrors);
+    return this;
   }
 
   validateUsername(username: string) {
-    const field = 'input parameter: username';
+    const field = 'username';
     if (!/^\w+$/.test(username)) {
-      return new InputParameterValidator([
-        ...this.fieldErrors,
-        {
-          field,
-          errorCode: ResponseErrorCode.ERR0006,
-        },
-      ]);
+      this.fieldErrors.push({
+        field,
+        errorCode: ResponseErrorCode.ERR0006,
+      });
     }
 
     if (username.length < 3 || username.length > 20) {
-      return new InputParameterValidator([
-        ...this.fieldErrors,
-        {
-          field,
-          errorCode: ResponseErrorCode.ERR0007,
-        },
-      ]);
+      this.fieldErrors.push({
+        field,
+        errorCode: ResponseErrorCode.ERR0007,
+      });
     }
-    return new InputParameterValidator(this.fieldErrors);
+    return this;
+  }
+
+  validateCommunityDescription(description: string) {
+    const field = 'description';
+
+    if (description.length > 300) {
+      this.fieldErrors.push({
+        field,
+        errorCode: ResponseErrorCode.ERR0020,
+      });
+    }
+    return this;
   }
 
   isValid() {
-    return this.fieldErrors.length === 0 ? true : false;
+    return this.fieldErrors.length === 0;
   }
 
   getErrorResponse() {
