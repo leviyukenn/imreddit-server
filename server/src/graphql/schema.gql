@@ -45,6 +45,9 @@ type Community {
   updatedAt: String!
   name: String!
   description: String!
+  background: String
+  icon: String
+  banner: String
   topics: [Topic!]!
   totalMemberships: Int!
 }
@@ -118,6 +121,7 @@ type Mutation {
   uploadImage(image: Upload!): UploadResponse!
   createCommunity(createCommunityInput: CreateCommunityInput!): CommunityResponse!
   editCommunityDescription(description: String!, communityId: String!): CommunityResponse!
+  setCommunityImages(banner: String, icon: String, background: String, communityId: String!): CommunityResponse!
   joinCommunity(userId: String!, communityId: String!): RoleResponse!
   leaveCommunity(userId: String!, communityId: String!): RoleResponse!
   vote(voteInput: VoteInput!): Int!

@@ -37,6 +37,18 @@ export class Community extends BaseEntity {
   @Column()
   description!: string;
 
+  @Field({ nullable: true })
+  @Column({ nullable: true })
+  background?: string;
+
+  @Field({ nullable: true })
+  @Column({ nullable: true })
+  icon?: string;
+
+  @Field({ nullable: true })
+  @Column({ nullable: true })
+  banner?: string;
+
   @OneToMany(() => Role, (role) => role.community)
   membersRole!: Role[];
 

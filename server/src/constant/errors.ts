@@ -19,6 +19,7 @@ export enum ResponseErrorCode {
   ERR0018,
   ERR0019,
   ERR0020,
+  ERR0021,
 }
 export const responseErrorMessages = new Map<ResponseErrorCode, string>([
   [ResponseErrorCode.ERR0001, 'only accept image-type file'],
@@ -45,7 +46,7 @@ export const responseErrorMessages = new Map<ResponseErrorCode, string>([
   [ResponseErrorCode.ERR0016, 'Invalid google authentication id token.'],
   [ResponseErrorCode.ERR0017, 'Invalid user.'],
   [ResponseErrorCode.ERR0018, 'Failed to join the community.'],
-  [ResponseErrorCode.ERR0019, 'Failed to save community description.'],
+  [ResponseErrorCode.ERR0019, 'Failed to save community settings.'],
   [
     ResponseErrorCode.ERR0020,
     'Community description must be less than 300 characters',

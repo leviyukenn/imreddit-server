@@ -132,4 +132,40 @@ export class CommunityResolver {
 
     return { data: community };
   }
+
+  @Mutation((returns) => CommunityResponse)
+  @UseGuards(isModerator)
+  async setCommunityImages(
+    @Args('communityId') communityId: string,
+    @Args('background', { nullable: true }) background?: string,
+    @Args('icon', { nullable: true }) icon?: string,
+    @Args('banner', { nullable: true }) banner?: string,
+  ): Promise<IResponse<Community>> {
+    if (!(background || icon || banner)) {
+      return createErrorResponse({
+        field: 'images',
+        errorCode: ResponseErrorCode.ERR0019,
+      });
+    }
+
+    const updatedRows = await this.communityService.setCommunityImages(
+      communityId,
+      { background, icon, banner },
+    );
+    if (!updatedRows) {
+      return createErrorResponse({
+        field: 'images',
+        errorCode: ResponseErrorCode.ERR0019,
+      });
+    }
+
+    const community = await this.communityService.findById(communityId);
+    if (!community) {
+      return createErrorResponse({
+        field: 'communityId',
+        errorCode: ResponseErrorCode.ERR0014,
+      });
+    }
+    return { data: community };
+  }
 }

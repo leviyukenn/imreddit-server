@@ -167,7 +167,7 @@ export class PostsResolver {
     //check if the uploaded file is a image.
     if (!mimetype.includes('image/')) {
       return createErrorResponse({
-        field: 'the type of the uploaded image',
+        field: 'file type',
         errorCode: ResponseErrorCode.ERR0001,
       });
     }

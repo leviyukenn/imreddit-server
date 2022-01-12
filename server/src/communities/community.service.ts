@@ -101,4 +101,23 @@ export class CommunityService {
 
     return result.affected;
   }
+
+  async setCommunityImages(
+    communityId: string,
+    images: { background?: string; icon?: string; banner?: string },
+  ) {
+    const imagesToUpdate = Object.fromEntries(
+      Object.entries(images).filter((entry) => entry[1]),
+    );
+    const result = await this.connection
+      .createQueryBuilder()
+      .update(Community)
+      .set(imagesToUpdate)
+      .where('id = :communityId', {
+        communityId,
+      })
+      .execute();
+
+    return result.affected;
+  }
 }
