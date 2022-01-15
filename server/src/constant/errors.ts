@@ -51,4 +51,5 @@ export const responseErrorMessages = new Map<ResponseErrorCode, string>([
     ResponseErrorCode.ERR0020,
     'Community description must be less than 300 characters',
   ],
+  [ResponseErrorCode.ERR0021, 'Invalid color format.'],
 ]);

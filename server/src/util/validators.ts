@@ -63,6 +63,19 @@ export class InputParameterValidator {
     return this;
   }
 
+  validateCommunityAppearanceColor(colorHex: string) {
+    const field = 'color';
+    const regex = /^#[0-9A-F]{6}$/i;
+
+    if (!regex.test(colorHex)) {
+      this.fieldErrors.push({
+        field,
+        errorCode: ResponseErrorCode.ERR0021,
+      });
+    }
+    return this;
+  }
+
   isValid() {
     return this.fieldErrors.length === 0;
   }

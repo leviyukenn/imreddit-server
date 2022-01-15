@@ -14,6 +14,24 @@ export class CreateCommunityInput {
   topicIds!: string[];
 }
 
+@InputType()
+export class CommunityAppearanceInput {
+  @Field()
+  background!: string;
+
+  @Field()
+  banner!: string;
+
+  @Field()
+  icon!: string;
+
+  @Field()
+  backgroundColor!: string;
+
+  @Field()
+  bannerColor!: string;
+}
+
 @ObjectType()
 export class CommunityResponse extends createTypedResponse(
   Community,

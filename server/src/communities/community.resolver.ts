@@ -15,7 +15,11 @@ import { isModerator } from 'src/guards/isModerator';
 import { IResponse } from 'src/response/response.dto';
 import { createErrorResponse } from 'src/util/createErrors';
 import { InputParameterValidator } from 'src/util/validators';
-import { CommunityResponse, CreateCommunityInput } from './community.dto';
+import {
+  CommunityAppearanceInput,
+  CommunityResponse,
+  CreateCommunityInput,
+} from './community.dto';
 import { Community } from './community.entity';
 import { CommunityService } from './community.service';
 
@@ -81,6 +85,7 @@ export class CommunityResolver {
   ): Promise<Community[]> {
     if (userId) {
       const communities = await this.communityService.findByUserId(userId);
+      console.log(communities);
 
       return communities;
     }
@@ -135,26 +140,26 @@ export class CommunityResolver {
 
   @Mutation((returns) => CommunityResponse)
   @UseGuards(isModerator)
-  async setCommunityImages(
-    @Args('communityId') communityId: string,
-    @Args('background', { nullable: true }) background?: string,
-    @Args('icon', { nullable: true }) icon?: string,
-    @Args('banner', { nullable: true }) banner?: string,
+  async setCommunityAppearance(
+    @Args('communityId')
+    communityId: string,
+    @Args('communityAppearance')
+    communityAppearance: CommunityAppearanceInput,
   ): Promise<IResponse<Community>> {
-    if (!(background || icon || banner)) {
-      return createErrorResponse({
-        field: 'images',
-        errorCode: ResponseErrorCode.ERR0019,
-      });
+    const validator = InputParameterValidator.object()
+      .validateCommunityAppearanceColor(communityAppearance.backgroundColor)
+      .validateCommunityAppearanceColor(communityAppearance.bannerColor);
+    if (!validator.isValid()) {
+      return validator.getErrorResponse();
     }
 
-    const updatedRows = await this.communityService.setCommunityImages(
+    const updatedRows = await this.communityService.updateCommunityAppearance(
       communityId,
-      { background, icon, banner },
+      communityAppearance,
     );
     if (!updatedRows) {
       return createErrorResponse({
-        field: 'images',
+        field: 'appearance',
         errorCode: ResponseErrorCode.ERR0019,
       });
     }

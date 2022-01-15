@@ -81,12 +81,12 @@ export class CommunityService {
   }
 
   async findByUserId(userId: string) {
-    const communites = await getManager()
+    const communities = await getManager()
       .createQueryBuilder(Community, 'community')
       .innerJoin('community.membersRole', 'role')
       .where('role.userId = :userId', { userId: userId })
       .getMany();
-    return communites;
+    return communities;
   }
 
   async editCommunityDescription(communityId: string, description: string) {
@@ -102,17 +102,23 @@ export class CommunityService {
     return result.affected;
   }
 
-  async setCommunityImages(
+  async updateCommunityAppearance(
     communityId: string,
-    images: { background?: string; icon?: string; banner?: string },
+    appearance: {
+      background: string;
+      icon: string;
+      banner: string;
+      backgroundColor: string;
+      bannerColor: string;
+    },
   ) {
-    const imagesToUpdate = Object.fromEntries(
-      Object.entries(images).filter((entry) => entry[1]),
-    );
+    // const imagesToUpdate = Object.fromEntries(
+    //   Object.entries(images).filter((entry) => entry[1]),
+    // );
     const result = await this.connection
       .createQueryBuilder()
       .update(Community)
-      .set(imagesToUpdate)
+      .set(appearance)
       .where('id = :communityId', {
         communityId,
       })

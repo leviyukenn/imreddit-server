@@ -37,17 +37,25 @@ export class Community extends BaseEntity {
   @Column()
   description!: string;
 
-  @Field({ nullable: true })
-  @Column({ nullable: true })
-  background?: string;
+  @Field({ defaultValue: '' })
+  @Column({ default: '' })
+  background: string = '';
 
-  @Field({ nullable: true })
-  @Column({ nullable: true })
-  icon?: string;
+  @Field()
+  @Column()
+  backgroundColor: string = '#DAE0E6';
 
-  @Field({ nullable: true })
-  @Column({ nullable: true })
-  banner?: string;
+  @Field()
+  @Column()
+  bannerColor: string = '#33a8ff';
+
+  @Field({ defaultValue: '' })
+  @Column({ default: '' })
+  icon: string = '';
+
+  @Field({ defaultValue: '' })
+  @Column({ default: '' })
+  banner: string = '';
 
   @OneToMany(() => Role, (role) => role.community)
   membersRole!: Role[];
