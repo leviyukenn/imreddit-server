@@ -85,7 +85,6 @@ export class CommunityResolver {
   ): Promise<Community[]> {
     if (userId) {
       const communities = await this.communityService.findByUserId(userId);
-      console.log(communities);
 
       return communities;
     }
