@@ -7,8 +7,9 @@ import { CommunityService } from 'src/communities/community.service';
 import { ResponseErrorCode } from 'src/constant/errors';
 import { isAuth } from 'src/guards/isAuth';
 import { IResponse } from 'src/response/response.dto';
+import { UsersService } from 'src/users/users.service';
 import { createErrorResponse } from 'src/util/createErrors';
-import { IsNull, LessThan } from 'typeorm';
+import { FindConditions, IsNull, LessThan } from 'typeorm';
 import { FindManyOptions } from 'typeorm/find-options/FindManyOptions';
 import { v4 } from 'uuid';
 import { CreatePostInput } from './dto/create-post.dto';
@@ -21,12 +22,51 @@ export class PostsResolver {
   constructor(
     private readonly postsService: PostsService,
     private readonly communityService: CommunityService,
+    private readonly userService: UsersService,
   ) {}
 
   // @ResolveField(() => String)
   // textSnippet(@Root() post: Post) {
   //   return post.text.slice(0, 50);
   // }
+
+  @Query((returns) => PaginatedPosts, { name: 'userPosts' })
+  async getUserPosts(
+    @Args('limit', { type: () => Int, nullable: true }) limit: number,
+    @Args('cursor', { nullable: true }) cursor: string,
+    @Args('userName') userName: string,
+  ): Promise<PaginatedPosts> {
+    const options: FindManyOptions<Post> = {
+      where: { parent: IsNull() },
+      order: { createdAt: 'DESC' },
+      relations: ['creator', 'parent', 'community'],
+    };
+
+    if (limit) {
+      options.take = limit + 1;
+    }
+    if (cursor) {
+      options.where = {
+        ...(options.where as FindConditions<Post>),
+        createdAt: LessThan(new Date(parseInt(cursor))),
+      };
+    }
+
+    const user = await this.userService.findByUserName(userName);
+    if (!user) throw new Error('no such user');
+    options.where = {
+      ...(options.where as Object),
+      creator: { id: user.id },
+    };
+
+    const posts = await this.postsService.find(options);
+
+    return {
+      posts: posts.slice(0, limit),
+      hasMore: posts.length === limit + 1,
+    };
+  }
+
   @Query((returns) => PaginatedPosts, { name: 'communityPosts' })
   async getCommunityPosts(
     @Args('limit', { type: () => Int, nullable: true }) limit: number,
@@ -44,19 +84,17 @@ export class PostsResolver {
     }
     if (cursor) {
       options.where = {
-        ...(options.where as Object),
+        ...(options.where as FindConditions<Post>),
         createdAt: LessThan(new Date(parseInt(cursor))),
       };
     }
 
-    if (communityName) {
-      const community = await this.communityService.findByName(communityName);
-      if (!community) throw Error('no such commnunity');
-      options.where = {
-        ...(options.where as Object),
-        community: { id: community.id },
-      };
-    }
+    const community = await this.communityService.findByName(communityName);
+    if (!community) throw Error('no such commnunity');
+    options.where = {
+      ...(options.where as Object),
+      community: { id: community.id },
+    };
 
     const posts = await this.postsService.find(options);
 

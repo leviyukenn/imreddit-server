@@ -78,16 +78,6 @@ type CommunityResponse {
   community: Community
 }
 
-type PaginatedPosts {
-  posts: [Post!]!
-  hasMore: Boolean!
-}
-
-type UploadResponse {
-  errors: [FieldError!]
-  path: String
-}
-
 type CompleteResponse {
   errors: [FieldError!]
   isComplete: Boolean
@@ -98,8 +88,19 @@ type UserResponse {
   user: User
 }
 
+type PaginatedPosts {
+  posts: [Post!]!
+  hasMore: Boolean!
+}
+
+type UploadResponse {
+  errors: [FieldError!]
+  path: String
+}
+
 type Query {
   me: User
+  userPosts(userName: String!, cursor: String, limit: Int): PaginatedPosts!
   communityPosts(communityName: String!, cursor: String, limit: Int): PaginatedPosts!
   paginatedPosts(cursor: String, limit: Int): PaginatedPosts!
   allPosts: [Post!]!
