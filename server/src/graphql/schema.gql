@@ -36,6 +36,7 @@ type Post {
   creator: User!
   community: Community!
   children: [Post!]!
+  descendant: [Post!]!
   images: [Image!]!
 }
 
@@ -93,6 +94,11 @@ type PaginatedPosts {
   hasMore: Boolean!
 }
 
+type PostResponse {
+  errors: [FieldError!]
+  post: Post
+}
+
 type UploadResponse {
   errors: [FieldError!]
   path: String
@@ -119,7 +125,9 @@ type Mutation {
   login(userInput: LoginInput!): UserResponse!
   logout: Boolean!
   googleAuthentication(idToken: String!): UserResponse!
-  createPost(createPostInput: CreatePostInput!): Post!
+  createTextPost(createTextPostInput: CreateTextPostInput!): PostResponse!
+  createImagePost(createImagePostInput: CreateImagePostInput!): PostResponse!
+  createComment(createCommentInput: CreateCommentInput!): PostResponse!
   deletePost(id: String!): Boolean!
   uploadImage(image: Upload!): UploadResponse!
   createCommunity(createCommunityInput: CreateCommunityInput!): CommunityResponse!
@@ -147,11 +155,15 @@ input LoginInput {
   password: String!
 }
 
-input CreatePostInput {
-  title: String
-  text: String
-  parentId: String
-  images: [ImageInput!]
+input CreateTextPostInput {
+  title: String!
+  text: String!
+  communityId: String!
+}
+
+input CreateImagePostInput {
+  title: String!
+  images: [ImageInput!]!
   communityId: String!
 }
 
@@ -159,6 +171,13 @@ input ImageInput {
   path: String!
   caption: String
   link: String
+}
+
+input CreateCommentInput {
+  text: String!
+  parentId: String!
+  ancestorId: String!
+  communityId: String!
 }
 
 """The `Upload` scalar type represents a file upload."""

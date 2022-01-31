@@ -112,10 +112,6 @@ export class CommunityService {
       bannerColor: string;
     },
   ) {
-    console.log(appearance);
-    // const imagesToUpdate = Object.fromEntries(
-    //   Object.entries(images).filter((entry) => entry[1]),
-    // );
     const result = await this.connection
       .createQueryBuilder()
       .update(Community)

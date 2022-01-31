@@ -12,4 +12,7 @@ export class PaginatedPosts {
 }
 
 @ObjectType()
+export class PostResponse extends createTypedResponse(Post, 'post') {}
+
+@ObjectType()
 export class UploadResponse extends createTypedResponse(String, 'path') {}

@@ -1,18 +1,15 @@
-import { InputType, Field } from "@nestjs/graphql";import { ImageInput } from "./create-post.dto";
+import { Field, InputType } from '@nestjs/graphql';
 
 @InputType()
-export class CreatePostInput {
-  @Field({ nullable: true })
-  title?: string;
+export class CreateCommentInput {
+  @Field()
+  text!: string;
 
-  @Field({ nullable: true })
-  text?: string;
+  @Field()
+  parentId!: string;
 
-  @Field({ nullable: true })
-  parentId?: string;
-
-  @Field(() => [ImageInput], { nullable: true })
-  images?: ImageInput[];
+  @Field()
+  ancestorId!: string;
 
   @Field()
   communityId!: string;

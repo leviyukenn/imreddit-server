@@ -6,12 +6,14 @@ import { Image } from './image.entity';
 import { Post } from './post.entity';
 import { PostsResolver } from './posts.resolver';
 import { PostsService } from './posts.service';
+import { RoleModule } from 'src/role/role.module';
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([Post, Image]),
     CommunityModule,
     UsersModule,
+    RoleModule,
   ],
   providers: [PostsResolver, PostsService],
 })

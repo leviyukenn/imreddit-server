@@ -76,6 +76,26 @@ export class InputParameterValidator {
     return this;
   }
 
+  validatePostTitle(title: string) {
+    if (title.length > 300) {
+      this.fieldErrors.push({
+        field: 'title',
+        errorCode: ResponseErrorCode.ERR0022,
+      });
+    }
+    return this;
+  }
+
+  validatePostText(title: string) {
+    if (title.length > 40000) {
+      this.fieldErrors.push({
+        field: 'text',
+        errorCode: ResponseErrorCode.ERR0023,
+      });
+    }
+    return this;
+  }
+
   isValid() {
     return this.fieldErrors.length === 0;
   }

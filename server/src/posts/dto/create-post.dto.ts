@@ -13,18 +13,24 @@ export class ImageInput {
 }
 
 @InputType()
-export class CreatePostInput {
-  @Field({ nullable: true })
-  title?: string;
+export class CreateTextPostInput {
+  @Field()
+  title!: string;
 
-  @Field({ nullable: true })
-  text?: string;
+  @Field()
+  text!: string;
 
-  @Field({ nullable: true })
-  parentId?: string;
+  @Field()
+  communityId!: string;
+}
 
-  @Field(() => [ImageInput], { nullable: true })
-  images?: ImageInput[];
+@InputType()
+export class CreateImagePostInput {
+  @Field()
+  title!: string;
+
+  @Field(() => [ImageInput])
+  images!: ImageInput[];
 
   @Field()
   communityId!: string;

@@ -7,13 +7,19 @@ import { CommunityService } from 'src/communities/community.service';
 import { ResponseErrorCode } from 'src/constant/errors';
 import { isAuth } from 'src/guards/isAuth';
 import { IResponse } from 'src/response/response.dto';
+import { RoleService } from 'src/role/role.service';
 import { UsersService } from 'src/users/users.service';
 import { createErrorResponse } from 'src/util/createErrors';
+import { InputParameterValidator } from 'src/util/validators';
 import { FindConditions, IsNull, LessThan } from 'typeorm';
 import { FindManyOptions } from 'typeorm/find-options/FindManyOptions';
 import { v4 } from 'uuid';
-import { CreatePostInput } from './dto/create-post.dto';
-import { PaginatedPosts, UploadResponse } from './dto/post.dto';
+import {
+  CreateImagePostInput,
+  CreateTextPostInput,
+} from './dto/create-post.dto';
+import { CreateCommentInput } from './dto/createComment.dto';
+import { PaginatedPosts, PostResponse, UploadResponse } from './dto/post.dto';
 import { Post } from './post.entity';
 import { PostsService } from './posts.service';
 
@@ -23,6 +29,7 @@ export class PostsResolver {
     private readonly postsService: PostsService,
     private readonly communityService: CommunityService,
     private readonly userService: UsersService,
+    private readonly roleService: RoleService,
   ) {}
 
   // @ResolveField(() => String)
@@ -151,26 +158,127 @@ export class PostsResolver {
     return this.postsService.findOne(postId);
   }
 
-  @Mutation((returns) => Post)
+  @Mutation((returns) => PostResponse)
   @UseGuards(isAuth)
-  async createPost(
-    @Args('createPostInput') createPostInput: CreatePostInput,
+  async createTextPost(
+    @Args('createTextPostInput') createTextPostInput: CreateTextPostInput,
     @Context() { req }: { req: Request },
-  ) {
-    //a post is not allowed to have no title
-    if (!createPostInput.title && !createPostInput.parentId)
-      throw new Error('illegal post.');
+  ): Promise<IResponse<Post>> {
+    const { title, text, communityId } = createTextPostInput;
+    const validator = InputParameterValidator.object()
+      .validatePostTitle(title)
+      .validatePostText(text);
+    if (!validator.isValid()) {
+      return validator.getErrorResponse();
+    }
 
-    //a comment is not allowed to have a title
-    if (createPostInput.title && createPostInput.parentId)
-      throw new Error('illegal post.');
-
-    return this.postsService.createPost({
-      ...createPostInput,
+    const community = await this.communityService.findById(communityId);
+    if (!community) {
+      return createErrorResponse({
+        field: 'communityId',
+        errorCode: ResponseErrorCode.ERR0014,
+      });
+    }
+    const userCommunityRole = await this.roleService.findByUserIdAndCommunityId(
+      req.session.userId!,
+      communityId,
+    );
+    if (!userCommunityRole?.isMember) {
+      return createErrorResponse({
+        field: 'communityId',
+        errorCode: ResponseErrorCode.ERR0024,
+      });
+    }
+    const post = await this.postsService.createTextPost({
+      ...createTextPostInput,
       creatorId: req.session.userId!,
     });
+
+    return { data: post };
   }
 
+  @Mutation((returns) => PostResponse)
+  @UseGuards(isAuth)
+  async createImagePost(
+    @Args('createImagePostInput') createImagePostInput: CreateImagePostInput,
+    @Context() { req }: { req: Request },
+  ): Promise<IResponse<Post>> {
+    const { title, communityId } = createImagePostInput;
+    const validator = InputParameterValidator.object().validatePostTitle(title);
+    if (!validator.isValid()) {
+      return validator.getErrorResponse();
+    }
+
+    const community = await this.communityService.findById(communityId);
+    if (!community) {
+      return createErrorResponse({
+        field: 'communityId',
+        errorCode: ResponseErrorCode.ERR0014,
+      });
+    }
+    const userCommunityRole = await this.roleService.findByUserIdAndCommunityId(
+      req.session.userId!,
+      communityId,
+    );
+    if (!userCommunityRole?.isMember) {
+      return createErrorResponse({
+        field: 'communityId',
+        errorCode: ResponseErrorCode.ERR0024,
+      });
+    }
+    const post = await this.postsService.createImagePost({
+      ...createImagePostInput,
+      creatorId: req.session.userId!,
+    });
+
+    return { data: post };
+  }
+
+  @Mutation((returns) => PostResponse)
+  @UseGuards(isAuth)
+  async createComment(
+    @Args('createCommentInput') createCommentInput: CreateCommentInput,
+    @Context() { req }: { req: Request },
+  ): Promise<IResponse<Post>> {
+    const { text, communityId, parentId, ancestorId } = createCommentInput;
+    const validator = InputParameterValidator.object().validatePostText(text);
+    if (!validator.isValid()) {
+      return validator.getErrorResponse();
+    }
+
+    const parentPost = await this.postsService.findOne(parentId);
+    const ancestorPost = await this.postsService.findOne(ancestorId);
+    if (!parentPost || !ancestorPost) {
+      return createErrorResponse({
+        field: 'post',
+        errorCode: ResponseErrorCode.ERR0025,
+      });
+    }
+
+    const community = await this.communityService.findById(communityId);
+    if (!community) {
+      return createErrorResponse({
+        field: 'communityId',
+        errorCode: ResponseErrorCode.ERR0014,
+      });
+    }
+    const userCommunityRole = await this.roleService.findByUserIdAndCommunityId(
+      req.session.userId!,
+      communityId,
+    );
+    if (!userCommunityRole?.isMember) {
+      return createErrorResponse({
+        field: 'communityId',
+        errorCode: ResponseErrorCode.ERR0024,
+      });
+    }
+    const post = await this.postsService.createComment({
+      ...createCommentInput,
+      creatorId: req.session.userId!,
+    });
+
+    return { data: post };
+  }
   // @Mutation((returns) => Post, { nullable: true })
   // async updatePost(@Args('updatePostInput') updatePostInput: UpdatePostInput) {
   //   const { id, title } = updatePostInput;

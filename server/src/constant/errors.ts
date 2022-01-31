@@ -20,6 +20,10 @@ export enum ResponseErrorCode {
   ERR0019,
   ERR0020,
   ERR0021,
+  ERR0022,
+  ERR0023,
+  ERR0024,
+  ERR0025,
 }
 export const responseErrorMessages = new Map<ResponseErrorCode, string>([
   [ResponseErrorCode.ERR0001, 'only accept image-type file'],
@@ -52,4 +56,8 @@ export const responseErrorMessages = new Map<ResponseErrorCode, string>([
     'Community description must be less than 300 characters',
   ],
   [ResponseErrorCode.ERR0021, 'Invalid color format.'],
+  [ResponseErrorCode.ERR0022, 'Post title must be less than 300 characters'],
+  [ResponseErrorCode.ERR0023, 'Post text must be less than 40000 characters'],
+  [ResponseErrorCode.ERR0024, 'Not the member of that community.'],
+  [ResponseErrorCode.ERR0025, 'Post no longer exits.'],
 ]);
