@@ -33,6 +33,7 @@ type Post {
   title: String
   text: String
   points: Int!
+  postType: Int!
   creator: User!
   community: Community!
   children: [Post!]!

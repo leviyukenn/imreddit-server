@@ -15,6 +15,12 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 
+export enum PostType {
+  TEXT_POST,
+  IMAGE_POST,
+  COMMENT,
+}
+
 @ObjectType()
 @Entity()
 export class Post extends BaseEntity {
@@ -41,6 +47,10 @@ export class Post extends BaseEntity {
   @Field((type) => Int)
   @Column({ type: 'int', default: 0 })
   points!: number;
+
+  @Field((type) => Int)
+  @Column({ type: 'int', default: 0 })
+  postType!: PostType;
 
   @Field(() => User)
   @ManyToOne((type) => User, (user) => user.posts, {

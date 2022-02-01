@@ -11,7 +11,7 @@ import { RoleService } from 'src/role/role.service';
 import { UsersService } from 'src/users/users.service';
 import { createErrorResponse } from 'src/util/createErrors';
 import { InputParameterValidator } from 'src/util/validators';
-import { FindConditions, IsNull, LessThan } from 'typeorm';
+import { FindConditions, LessThan } from 'typeorm';
 import { FindManyOptions } from 'typeorm/find-options/FindManyOptions';
 import { v4 } from 'uuid';
 import {
@@ -20,7 +20,7 @@ import {
 } from './dto/create-post.dto';
 import { CreateCommentInput } from './dto/createComment.dto';
 import { PaginatedPosts, PostResponse, UploadResponse } from './dto/post.dto';
-import { Post } from './post.entity';
+import { Post, PostType } from './post.entity';
 import { PostsService } from './posts.service';
 
 @Resolver(Post)
@@ -44,7 +44,10 @@ export class PostsResolver {
     @Args('userName') userName: string,
   ): Promise<PaginatedPosts> {
     const options: FindManyOptions<Post> = {
-      where: { parent: IsNull() },
+      where: [
+        { postType: PostType.TEXT_POST },
+        { postType: PostType.IMAGE_POST },
+      ],
       order: { createdAt: 'DESC' },
       relations: ['creator', 'parent', 'community'],
     };
@@ -53,18 +56,22 @@ export class PostsResolver {
       options.take = limit + 1;
     }
     if (cursor) {
-      options.where = {
-        ...(options.where as FindConditions<Post>),
-        createdAt: LessThan(new Date(parseInt(cursor))),
-      };
+      options.where = (options.where as FindConditions<Post>[]).map(
+        (condition) => ({
+          ...condition,
+          createdAt: LessThan(new Date(parseInt(cursor))),
+        }),
+      );
     }
 
     const user = await this.userService.findByUserName(userName);
     if (!user) throw new Error('no such user');
-    options.where = {
-      ...(options.where as Object),
-      creator: { id: user.id },
-    };
+    options.where = (options.where as FindConditions<Post>[]).map(
+      (condition) => ({
+        ...condition,
+        creator: { id: user.id },
+      }),
+    );
 
     const posts = await this.postsService.find(options);
 
@@ -81,7 +88,10 @@ export class PostsResolver {
     @Args('communityName') communityName: string,
   ): Promise<PaginatedPosts> {
     const options: FindManyOptions<Post> = {
-      where: { parent: IsNull() },
+      where: [
+        { postType: PostType.TEXT_POST },
+        { postType: PostType.IMAGE_POST },
+      ],
       order: { createdAt: 'DESC' },
       relations: ['creator', 'parent', 'community'],
     };
@@ -90,18 +100,22 @@ export class PostsResolver {
       options.take = limit + 1;
     }
     if (cursor) {
-      options.where = {
-        ...(options.where as FindConditions<Post>),
-        createdAt: LessThan(new Date(parseInt(cursor))),
-      };
+      options.where = (options.where as FindConditions<Post>[]).map(
+        (condition) => ({
+          ...condition,
+          createdAt: LessThan(new Date(parseInt(cursor))),
+        }),
+      );
     }
 
     const community = await this.communityService.findByName(communityName);
     if (!community) throw Error('no such commnunity');
-    options.where = {
-      ...(options.where as Object),
-      community: { id: community.id },
-    };
+    options.where = (options.where as FindConditions<Post>[]).map(
+      (condition) => ({
+        ...condition,
+        community: { id: community.id },
+      }),
+    );
 
     const posts = await this.postsService.find(options);
 
@@ -117,7 +131,10 @@ export class PostsResolver {
     @Args('cursor', { nullable: true }) cursor: string,
   ): Promise<PaginatedPosts> {
     const options: FindManyOptions<Post> = {
-      where: { parent: IsNull() },
+      where: [
+        { postType: PostType.TEXT_POST },
+        { postType: PostType.IMAGE_POST },
+      ],
       order: { createdAt: 'DESC' },
       relations: ['creator', 'parent', 'community'],
     };
@@ -126,10 +143,12 @@ export class PostsResolver {
       options.take = limit + 1;
     }
     if (cursor) {
-      options.where = {
-        ...(options.where as Object),
-        createdAt: LessThan(new Date(parseInt(cursor))),
-      };
+      options.where = (options.where as FindConditions<Post>[]).map(
+        (condition) => ({
+          ...condition,
+          createdAt: LessThan(new Date(parseInt(cursor))),
+        }),
+      );
     }
 
     const posts = await this.postsService.find(options);
@@ -143,7 +162,10 @@ export class PostsResolver {
   @Query((returns) => [Post], { name: 'allPosts' })
   async getAllPosts(): Promise<Post[]> {
     const options: FindManyOptions<Post> = {
-      where: { parent: IsNull() },
+      where: [
+        { postType: PostType.TEXT_POST },
+        { postType: PostType.IMAGE_POST },
+      ],
       order: { createdAt: 'DESC' },
       relations: ['creator', 'parent', 'community'],
     };

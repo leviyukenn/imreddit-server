@@ -7,7 +7,7 @@ import {
 } from './dto/create-post.dto';
 import { CreateCommentInput } from './dto/createComment.dto';
 import { Image } from './image.entity';
-import { Post } from './post.entity';
+import { Post, PostType } from './post.entity';
 
 @Injectable()
 export class PostsService {
@@ -23,6 +23,7 @@ export class PostsService {
     try {
       const newPost = await Post.create({
         ...createPostInput,
+        postType: PostType.TEXT_POST,
         community: { id: createPostInput.communityId },
         creator: { id: createPostInput.creatorId },
       });
@@ -52,6 +53,7 @@ export class PostsService {
     try {
       const newPost = await Post.create({
         ...createPostInput,
+        postType: PostType.IMAGE_POST,
         community: { id: createPostInput.communityId },
         creator: { id: createPostInput.creatorId },
       });
@@ -89,6 +91,7 @@ export class PostsService {
     try {
       const newPost = await Post.create({
         ...createCommentInput,
+        postType: PostType.COMMENT,
         community: { id: createCommentInput.communityId },
         parent: { id: createCommentInput.parentId },
         ancestor: { id: createCommentInput.ancestorId },
