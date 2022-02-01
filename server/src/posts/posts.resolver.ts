@@ -49,7 +49,7 @@ export class PostsResolver {
         { postType: PostType.IMAGE_POST },
       ],
       order: { createdAt: 'DESC' },
-      relations: ['creator', 'parent', 'community'],
+      relations: ['creator', 'ancestor', 'community'],
     };
 
     if (limit) {
@@ -93,7 +93,7 @@ export class PostsResolver {
         { postType: PostType.IMAGE_POST },
       ],
       order: { createdAt: 'DESC' },
-      relations: ['creator', 'parent', 'community'],
+      relations: ['creator', 'ancestor', 'community'],
     };
 
     if (limit) {
@@ -136,7 +136,7 @@ export class PostsResolver {
         { postType: PostType.IMAGE_POST },
       ],
       order: { createdAt: 'DESC' },
-      relations: ['creator', 'parent', 'community'],
+      relations: ['creator', 'ancestor', 'community'],
     };
 
     if (limit) {
@@ -167,7 +167,7 @@ export class PostsResolver {
         { postType: PostType.IMAGE_POST },
       ],
       order: { createdAt: 'DESC' },
-      relations: ['creator', 'parent', 'community'],
+      relations: ['creator', 'ancestor', 'community'],
     };
 
     const posts = await this.postsService.find(options);

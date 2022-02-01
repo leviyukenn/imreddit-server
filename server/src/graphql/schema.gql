@@ -37,7 +37,7 @@ type Post {
   creator: User!
   community: Community!
   children: [Post!]!
-  descendant: [Post!]!
+  ancestor: Post
   images: [Image!]!
 }
 

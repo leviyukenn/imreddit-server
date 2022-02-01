@@ -77,10 +77,10 @@ export class Post extends BaseEntity {
   @OneToMany(() => Post, (post) => post.parent)
   children!: Post[];
 
+  @Field(() => Post,{nullable:true})
   @ManyToOne(() => Post, (post) => post.descendant, { nullable: true })
   ancestor!: Post;
 
-  @Field(() => [Post])
   @OneToMany(() => Post, (post) => post.ancestor)
   descendant!: Post[];
 

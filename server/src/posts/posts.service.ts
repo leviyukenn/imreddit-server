@@ -31,7 +31,7 @@ export class PostsService {
       const savedPost = await queryRunner.manager.save(newPost);
 
       await queryRunner.commitTransaction();
-      const post = Post.findOne(savedPost.id);
+      const post = this.findOne(savedPost.id);
       return post;
     } catch (err) {
       // since we have errors lets rollback the changes we made
@@ -69,7 +69,7 @@ export class PostsService {
       });
 
       await queryRunner.commitTransaction();
-      const post = Post.findOne(savedPost.id);
+      const post = this.findOne(savedPost.id);
       return post;
     } catch (err) {
       // since we have errors lets rollback the changes we made
@@ -101,7 +101,7 @@ export class PostsService {
       const savedPost = await queryRunner.manager.save(newPost);
 
       await queryRunner.commitTransaction();
-      const post = Post.findOne(savedPost.id);
+      const post = this.findOne(savedPost.id);
       return post;
     } catch (err) {
       // since we have errors lets rollback the changes we made
@@ -119,7 +119,7 @@ export class PostsService {
 
   async findOne(postId: string): Promise<Post | undefined> {
     return Post.findOne(postId, {
-      relations: ['children', 'community'],
+      relations: ['children', 'community', 'ancestor'],
     });
   }
 
