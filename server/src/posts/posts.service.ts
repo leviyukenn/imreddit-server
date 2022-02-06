@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
-import { Connection } from 'typeorm';
+import { Upvote } from 'src/upvotes/upvote.entity';
+import { Connection, getManager } from 'typeorm';
 import { FindManyOptions } from 'typeorm/find-options/FindManyOptions';
 import {
   CreateImagePostInput,
@@ -82,7 +83,10 @@ export class PostsService {
   }
 
   async createComment(
-    createCommentInput: CreateCommentInput & { creatorId: string },
+    createCommentInput: CreateCommentInput & {
+      creatorId: string;
+      layer: number;
+    },
   ): Promise<Post | undefined> {
     const queryRunner = this.connection.createQueryRunner();
 
@@ -92,6 +96,7 @@ export class PostsService {
       const newPost = await Post.create({
         ...createCommentInput,
         postType: PostType.COMMENT,
+        layer: createCommentInput.layer,
         community: { id: createCommentInput.communityId },
         parent: { id: createCommentInput.parentId },
         ancestor: { id: createCommentInput.ancestorId },
@@ -119,11 +124,67 @@ export class PostsService {
 
   async findOne(postId: string): Promise<Post | undefined> {
     return Post.findOne(postId, {
-      relations: ['children', 'community', 'ancestor'],
+      relations: ['creator', 'children', 'community', 'ancestor'],
     });
   }
 
-  async remove(id: string): Promise<void> {
-    await Post.delete(id);
+  async countAllPostComments(postId: string): Promise<number> {
+    return Post.count({ where: { ancestor: { id: postId } } });
+  }
+
+  async remove(id: string): Promise<number | null | undefined> {
+    const queryRunner = this.connection.createQueryRunner();
+
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
+    try {
+      const comments = await this.find({ where: { ancestor: { id } } });
+      if (comments.length !== 0) {
+        const commentIds = comments.map((comment) => ({ id: comment.id }));
+        const commentPostIds = comments.map((comment) => ({
+          postId: comment.id,
+        }));
+        await queryRunner.manager.delete(Upvote, commentPostIds);
+        await queryRunner.manager.delete(Post, commentIds);
+      }
+
+      await queryRunner.manager.delete(Upvote, { postId: id });
+      await queryRunner.manager.delete(Image, { post: { id } });
+      const { affected } = await queryRunner.manager.delete(Post, { id });
+
+      await queryRunner.commitTransaction();
+      return affected;
+    } catch (err) {
+      // since we have errors lets rollback the changes we made
+      await queryRunner.rollbackTransaction();
+      throw new Error(err);
+    } finally {
+      // you need to release a queryRunner which was manually instantiated
+      await queryRunner.release();
+    }
+  }
+
+  async findAllPostsUserCommented(userId: string): Promise<string[]> {
+    const rawPosts: {
+      [key: string]: any;
+    }[] = await getManager()
+      .createQueryBuilder(Post, 'post')
+      .distinctOn(['post.ancestorId'])
+      .where('post.creatorId = :userId', { userId })
+      .andWhere('post.postType =:postType', { postType: 2 })
+      .getRawMany();
+
+    return rawPosts.map((post) => post.post_ancestorId as string);
+  }
+
+  async findUserComments(
+    userId: string,
+    ancestorId: string,
+  ): Promise<Post[]> {
+    const comments = Post.find({
+      relations: ['ancestor', 'creator'],
+      where: { ancestor: { id: ancestorId }, creator: { id: userId } },
+    });
+    return comments;
   }
 }

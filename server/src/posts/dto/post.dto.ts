@@ -15,4 +15,7 @@ export class PaginatedPosts {
 export class PostResponse extends createTypedResponse(Post, 'post') {}
 
 @ObjectType()
+export class DeletePostResponse extends createTypedResponse(String, 'postId') {}
+
+@ObjectType()
 export class UploadResponse extends createTypedResponse(String, 'path') {}

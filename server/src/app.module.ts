@@ -8,12 +8,12 @@ import Joi from 'joi';
 import { join } from 'path';
 import { Connection, getConnectionOptions } from 'typeorm';
 import { CommunityModule } from './communities/community.module';
+import { MailModule } from './mail/mail.module';
 import { PostsModule } from './posts/posts.module';
 import { RoleModule } from './role/role.module';
 import { TopicModule } from './topic/topic.module';
 import { UpvotesModule } from './upvotes/upvotes.module';
 import { UsersModule } from './users/users.module';
-import { MailModule } from './mail/mail.module';
 
 @Module({
   imports: [
@@ -25,6 +25,9 @@ import { MailModule } from './mail/mail.module';
     TopicModule,
     ServeStaticModule.forRoot({
       rootPath: join(__dirname, '..', 'public'),
+      serveStaticOptions: {
+        index: false,
+      },
     }),
     ConfigModule.forRoot({
       validationSchema: Joi.object({

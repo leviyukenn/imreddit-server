@@ -17,6 +17,10 @@ async function bootstrap() {
   //use redis to store session
   const RedisStore = connectRedis(session);
   const redisClient = redis.createClient();
+  // app.useStaticAssets(join(__dirname, '..', 'public'), {
+  //   index: false,
+  //   prefix: '/public',
+  // });
   app.use(
     session({
       name: COOKIE_NAME,
@@ -30,6 +34,7 @@ async function bootstrap() {
       resave: false,
     }),
   );
+
   await app.listen(3000);
 }
 bootstrap();

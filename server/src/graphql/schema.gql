@@ -34,10 +34,13 @@ type Post {
   text: String
   points: Int!
   postType: Int!
+  totalComments: Int!
+  layer: Int!
   creator: User!
   community: Community!
   children: [Post!]!
   ancestor: Post
+  descendant: [Post!]!
   images: [Image!]!
 }
 
@@ -100,6 +103,11 @@ type PostResponse {
   post: Post
 }
 
+type DeletePostResponse {
+  errors: [FieldError!]
+  postId: String
+}
+
 type UploadResponse {
   errors: [FieldError!]
   path: String
@@ -107,6 +115,8 @@ type UploadResponse {
 
 type Query {
   me: User
+  userComments(ancestorId: String!, userName: String!): [Post!]!
+  userCommentedPosts(userName: String!, cursor: String, limit: Int): PaginatedPosts!
   userPosts(userName: String!, cursor: String, limit: Int): PaginatedPosts!
   communityPosts(communityName: String!, cursor: String, limit: Int): PaginatedPosts!
   paginatedPosts(cursor: String, limit: Int): PaginatedPosts!
@@ -129,7 +139,7 @@ type Mutation {
   createTextPost(createTextPostInput: CreateTextPostInput!): PostResponse!
   createImagePost(createImagePostInput: CreateImagePostInput!): PostResponse!
   createComment(createCommentInput: CreateCommentInput!): PostResponse!
-  deletePost(id: String!): Boolean!
+  deleteMyPost(postId: String!): DeletePostResponse!
   uploadImage(image: Upload!): UploadResponse!
   createCommunity(createCommunityInput: CreateCommunityInput!): CommunityResponse!
   editCommunityDescription(description: String!, communityId: String!): CommunityResponse!

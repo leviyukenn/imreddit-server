@@ -52,6 +52,13 @@ export class Post extends BaseEntity {
   @Column({ type: 'int', default: 0 })
   postType!: PostType;
 
+  @Field((type) => Int, { defaultValue: 0 })
+  totalComments!: number;
+
+  @Field((type) => Int)
+  @Column({ type: 'int', default: 0 })
+  layer!: number;
+
   @Field(() => User)
   @ManyToOne((type) => User, (user) => user.posts, {
     nullable: false,
@@ -77,10 +84,11 @@ export class Post extends BaseEntity {
   @OneToMany(() => Post, (post) => post.parent)
   children!: Post[];
 
-  @Field(() => Post,{nullable:true})
+  @Field(() => Post, { nullable: true })
   @ManyToOne(() => Post, (post) => post.descendant, { nullable: true })
   ancestor!: Post;
 
+  @Field(() => [Post])
   @OneToMany(() => Post, (post) => post.ancestor)
   descendant!: Post[];
 

@@ -24,6 +24,8 @@ export enum ResponseErrorCode {
   ERR0023,
   ERR0024,
   ERR0025,
+  ERR0026,
+  ERR0027,
 }
 export const responseErrorMessages = new Map<ResponseErrorCode, string>([
   [ResponseErrorCode.ERR0001, 'only accept image-type file'],
@@ -60,4 +62,6 @@ export const responseErrorMessages = new Map<ResponseErrorCode, string>([
   [ResponseErrorCode.ERR0023, 'Post text must be less than 40000 characters'],
   [ResponseErrorCode.ERR0024, 'Not the member of that community.'],
   [ResponseErrorCode.ERR0025, 'Post no longer exits.'],
+  [ResponseErrorCode.ERR0026, 'Not the creator of that post.'],
+  [ResponseErrorCode.ERR0027, 'Failed to delete that post.'],
 ]);

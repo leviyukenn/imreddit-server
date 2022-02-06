@@ -1,4 +1,9 @@
-import { CanActivate, ExecutionContext, Injectable } from '@nestjs/common';
+import {
+  CanActivate,
+  ExecutionContext,
+  HttpException,
+  Injectable,
+} from '@nestjs/common';
 import { GqlExecutionContext } from '@nestjs/graphql';
 import { Request } from 'express';
 
@@ -10,7 +15,7 @@ export class isAuth implements CanActivate {
     }>();
 
     if (!req.session.userId) {
-      return false;
+      throw new HttpException('Please login first.', 401);
     }
     return true;
   }

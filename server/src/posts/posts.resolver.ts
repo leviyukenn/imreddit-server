@@ -1,5 +1,14 @@
 import { UseGuards } from '@nestjs/common';
-import { Args, Context, Int, Mutation, Query, Resolver } from '@nestjs/graphql';
+import {
+  Args,
+  Context,
+  Int,
+  Mutation,
+  Query,
+  ResolveField,
+  Resolver,
+  Root,
+} from '@nestjs/graphql';
 import { Request } from 'express';
 import { createWriteStream } from 'fs';
 import { FileUpload, GraphQLUpload } from 'graphql-upload';
@@ -11,7 +20,7 @@ import { RoleService } from 'src/role/role.service';
 import { UsersService } from 'src/users/users.service';
 import { createErrorResponse } from 'src/util/createErrors';
 import { InputParameterValidator } from 'src/util/validators';
-import { FindConditions, LessThan } from 'typeorm';
+import { FindConditions, In, LessThan } from 'typeorm';
 import { FindManyOptions } from 'typeorm/find-options/FindManyOptions';
 import { v4 } from 'uuid';
 import {
@@ -19,7 +28,12 @@ import {
   CreateTextPostInput,
 } from './dto/create-post.dto';
 import { CreateCommentInput } from './dto/createComment.dto';
-import { PaginatedPosts, PostResponse, UploadResponse } from './dto/post.dto';
+import {
+  DeletePostResponse,
+  PaginatedPosts,
+  PostResponse,
+  UploadResponse,
+} from './dto/post.dto';
 import { Post, PostType } from './post.entity';
 import { PostsService } from './posts.service';
 
@@ -32,10 +46,58 @@ export class PostsResolver {
     private readonly roleService: RoleService,
   ) {}
 
-  // @ResolveField(() => String)
-  // textSnippet(@Root() post: Post) {
-  //   return post.text.slice(0, 50);
-  // }
+  @ResolveField(() => String)
+  totalComments(@Root() post: Post) {
+    return this.postsService.countAllPostComments(post.id);
+  }
+  @Query((returns) => [Post], { name: 'userComments' })
+  async getUserComments(
+    @Args('userName') userName: string,
+    @Args('ancestorId') ancestorId: string,
+  ): Promise<Post[]> {
+    const user = await this.userService.findByUserName(userName);
+    if (!user) throw new Error('no such user');
+
+    const comments = await this.postsService.findUserComments(
+      user.id,
+      ancestorId,
+    );
+    return comments;
+  }
+
+  @Query((returns) => PaginatedPosts, { name: 'userCommentedPosts' })
+  async getPostsUserCommentedOn(
+    @Args('limit', { type: () => Int, nullable: true }) limit: number,
+    @Args('cursor', { nullable: true }) cursor: string,
+    @Args('userName') userName: string,
+  ): Promise<PaginatedPosts> {
+    const user = await this.userService.findByUserName(userName);
+    if (!user) throw new Error('no such user');
+
+    const postIds = await this.postsService.findAllPostsUserCommented(user.id);
+    const options: FindManyOptions<Post> = {
+      where: { id: In(postIds) },
+      order: { createdAt: 'DESC' },
+      relations: ['creator', 'ancestor', 'community'],
+    };
+
+    if (limit) {
+      options.take = limit + 1;
+    }
+    if (cursor) {
+      options.where = {
+        ...(options.where as FindConditions<Post>),
+        createdAt: LessThan(new Date(parseInt(cursor))),
+      };
+    }
+
+    const posts = await this.postsService.find(options);
+
+    return {
+      posts: posts.slice(0, limit),
+      hasMore: posts.length === limit + 1,
+    };
+  }
 
   @Query((returns) => PaginatedPosts, { name: 'userPosts' })
   async getUserPosts(
@@ -296,6 +358,7 @@ export class PostsResolver {
     }
     const post = await this.postsService.createComment({
       ...createCommentInput,
+      layer: parentPost.layer + 1,
       creatorId: req.session.userId!,
     });
 
@@ -318,13 +381,29 @@ export class PostsResolver {
   //   return this.postsService.save(post);
   // }
 
-  @Mutation((returns) => Boolean)
-  async deletePost(@Args({ name: 'id', type: () => String }) id: string) {
-    let deleteSuccess = true;
-    await this.postsService.remove(id).catch(() => {
-      deleteSuccess = false;
-    });
-    return deleteSuccess;
+  @Mutation((returns) => DeletePostResponse)
+  @UseGuards(isAuth)
+  async deleteMyPost(
+    @Args({ name: 'postId', type: () => String }) postId: string,
+    @Context() { req }: { req: Request },
+  ): Promise<IResponse<string>> {
+    const post = await this.postsService.findOne(postId);
+    if (!post?.creator || post?.creator.id !== req.session.userId) {
+      return createErrorResponse({
+        field: 'postId',
+        errorCode: ResponseErrorCode.ERR0026,
+      });
+    }
+
+    const affected = await this.postsService.remove(postId).catch(() => null);
+
+    if (!affected) {
+      return createErrorResponse({
+        field: 'postId',
+        errorCode: ResponseErrorCode.ERR0027,
+      });
+    }
+    return { data: postId };
   }
 
   @Mutation(() => UploadResponse)
