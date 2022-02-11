@@ -116,6 +116,7 @@ type UploadResponse {
 type Query {
   me: User
   userComments(ancestorId: String!, userName: String!): [Post!]!
+  userUpvotedPosts(cursor: String, limit: Int, upvoteType: Int!, userName: String!): PaginatedPosts!
   userCommentedPosts(userName: String!, cursor: String, limit: Int): PaginatedPosts!
   userPosts(userName: String!, cursor: String, limit: Int): PaginatedPosts!
   communityPosts(communityName: String!, cursor: String, limit: Int): PaginatedPosts!

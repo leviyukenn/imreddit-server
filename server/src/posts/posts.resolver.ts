@@ -17,6 +17,7 @@ import { ResponseErrorCode } from 'src/constant/errors';
 import { isAuth } from 'src/guards/isAuth';
 import { IResponse } from 'src/response/response.dto';
 import { RoleService } from 'src/role/role.service';
+import { UpvotesService } from 'src/upvotes/upvotes.service';
 import { UsersService } from 'src/users/users.service';
 import { createErrorResponse } from 'src/util/createErrors';
 import { InputParameterValidator } from 'src/util/validators';
@@ -44,6 +45,7 @@ export class PostsResolver {
     private readonly communityService: CommunityService,
     private readonly userService: UsersService,
     private readonly roleService: RoleService,
+    private readonly upvoteService: UpvotesService,
   ) {}
 
   @ResolveField(() => String)
@@ -63,6 +65,47 @@ export class PostsResolver {
       ancestorId,
     );
     return comments;
+  }
+
+  @Query((returns) => PaginatedPosts, { name: 'userUpvotedPosts' })
+  async getPostsUserUpvoted(
+    @Args('userName') userName: string,
+    //upvoteType: 1 for upvote, 0 for downvote
+    @Args('upvoteType', { type: () => Int }) upvoteType: number,
+    @Args('limit', { type: () => Int, nullable: true }) limit: number,
+    @Args('cursor', { nullable: true }) cursor: string,
+  ): Promise<PaginatedPosts> {
+    const user = await this.userService.findByUserName(userName);
+    if (!user) throw new Error('no such user');
+
+    if (!(upvoteType === 0 || upvoteType === 1))
+      throw new Error('invalid upvoteType');
+    const postIds = await this.upvoteService.findUserUpvotePost(
+      user.id,
+      upvoteType ? 1 : -1,
+    );
+    const options: FindManyOptions<Post> = {
+      where: { id: In(postIds) },
+      order: { createdAt: 'DESC' },
+      relations: ['creator', 'ancestor', 'community'],
+    };
+
+    if (limit) {
+      options.take = limit + 1;
+    }
+    if (cursor) {
+      options.where = {
+        ...(options.where as FindConditions<Post>),
+        createdAt: LessThan(new Date(parseInt(cursor))),
+      };
+    }
+
+    const posts = await this.postsService.find(options);
+
+    return {
+      posts: posts.slice(0, limit),
+      hasMore: posts.length === limit + 1,
+    };
   }
 
   @Query((returns) => PaginatedPosts, { name: 'userCommentedPosts' })

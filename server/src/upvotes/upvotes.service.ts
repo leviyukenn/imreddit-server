@@ -43,4 +43,9 @@ export class UpvotesService {
   ): Promise<Upvote | undefined> {
     return Upvote.findOne({ userId, postId });
   }
+
+  async findUserUpvotePost(userId: string, value: number): Promise<string[]> {
+    const upvotes = await Upvote.find({ where: { userId, value: value } });
+    return upvotes.map((upvote) => upvote.postId);
+  }
 }
