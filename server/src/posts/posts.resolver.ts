@@ -21,7 +21,7 @@ import { UpvotesService } from 'src/upvotes/upvotes.service';
 import { UsersService } from 'src/users/users.service';
 import { createErrorResponse } from 'src/util/createErrors';
 import { InputParameterValidator } from 'src/util/validators';
-import { FindConditions, In, LessThan } from 'typeorm';
+import { FindConditions, In, LessThan, Not } from 'typeorm';
 import { FindManyOptions } from 'typeorm/find-options/FindManyOptions';
 import { v4 } from 'uuid';
 import {
@@ -85,7 +85,7 @@ export class PostsResolver {
       upvoteType ? 1 : -1,
     );
     const options: FindManyOptions<Post> = {
-      where: { id: In(postIds) },
+      where: { id: In(postIds), postType: Not(2) },
       order: { createdAt: 'DESC' },
       relations: ['creator', 'ancestor', 'community'],
     };
