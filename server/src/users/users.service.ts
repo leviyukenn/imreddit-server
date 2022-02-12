@@ -1,12 +1,16 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Auth, google } from 'googleapis';
+import { Connection } from 'typeorm';
 import { User, UserRole } from './user.entity';
 
 @Injectable()
 export class UsersService {
   oauthClient: Auth.OAuth2Client;
-  constructor(private readonly configService: ConfigService) {
+  constructor(
+    private readonly configService: ConfigService,
+    private connection: Connection,
+  ) {
     const clientID = this.configService.get('GOOGLE_AUTH_CLIENT_ID');
     const clientSecret = this.configService.get('GOOGLE_AUTH_CLIENT_SECRET');
 
@@ -17,6 +21,7 @@ export class UsersService {
     username: string;
     password: string;
     email: string;
+    avatar: string;
     role: UserRole;
   }): Promise<User> {
     return User.create(userInput).save();
@@ -24,6 +29,10 @@ export class UsersService {
 
   async findByUserId(userId: string) {
     return User.findOne(userId);
+  }
+
+  async findAllUser() {
+    return User.find();
   }
 
   async findByUserName(username: string): Promise<User | undefined> {
@@ -69,6 +78,19 @@ export class UsersService {
     }).save();
 
     return user;
+  }
+
+  async updateUserAvatar(userId: string, avatar: string) {
+    const result = await this.connection
+      .createQueryBuilder()
+      .update(User)
+      .set({ avatar })
+      .where('id = :userId', {
+        userId,
+      })
+      .execute();
+
+    return result.affected;
   }
 
   // async remove(id: string): Promise<void> {

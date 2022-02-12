@@ -2,11 +2,12 @@
 # THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
 # ------------------------------------------------------
 
-type Image {
-  id: String!
-  path: String!
-  caption: String
-  link: String
+type Role {
+  userId: String!
+  communityId: String!
+  joinedAt: String!
+  isMember: Boolean!
+  isModerator: Boolean!
 }
 
 type Topic {
@@ -17,13 +18,26 @@ type Topic {
   title: String!
 }
 
-type User {
+type Community {
   id: String!
   createdAt: String!
   updatedAt: String!
-  username: String!
-  role: String!
-  email: String!
+  name: String!
+  description: String!
+  background: String!
+  backgroundColor: String!
+  bannerColor: String!
+  icon: String!
+  banner: String!
+  topics: [Topic!]!
+  totalMemberships: Int!
+}
+
+type Image {
+  id: String!
+  path: String!
+  caption: String
+  link: String
 }
 
 type Post {
@@ -44,43 +58,21 @@ type Post {
   images: [Image!]!
 }
 
-type Community {
+type User {
   id: String!
   createdAt: String!
   updatedAt: String!
-  name: String!
-  description: String!
-  background: String!
-  backgroundColor: String!
-  bannerColor: String!
-  icon: String!
-  banner: String!
-  topics: [Topic!]!
-  totalMemberships: Int!
-}
-
-type Role {
-  userId: String!
-  communityId: String!
-  joinedAt: String!
-  isMember: Boolean!
-  isModerator: Boolean!
+  username: String!
+  role: String!
+  email: String!
+  about: String!
+  avatar: String!
 }
 
 type FieldError {
   field: String!
   errorCode: String!
   message: String!
-}
-
-type RoleResponse {
-  errors: [FieldError!]
-  role: Role
-}
-
-type CommunityResponse {
-  errors: [FieldError!]
-  community: Community
 }
 
 type CompleteResponse {
@@ -91,6 +83,16 @@ type CompleteResponse {
 type UserResponse {
   errors: [FieldError!]
   user: User
+}
+
+type RoleResponse {
+  errors: [FieldError!]
+  role: Role
+}
+
+type CommunityResponse {
+  errors: [FieldError!]
+  community: Community
 }
 
 type PaginatedPosts {
@@ -114,6 +116,7 @@ type UploadResponse {
 }
 
 type Query {
+  user(userName: String!): User
   me: User
   userComments(ancestorId: String!, userName: String!): [Post!]!
   userUpvotedPosts(cursor: String, limit: Int, upvoteType: Int!, userName: String!): PaginatedPosts!
@@ -137,6 +140,7 @@ type Mutation {
   login(userInput: LoginInput!): UserResponse!
   logout: Boolean!
   googleAuthentication(idToken: String!): UserResponse!
+  changeUserAvatar(avatarSeed: String!): User!
   createTextPost(createTextPostInput: CreateTextPostInput!): PostResponse!
   createImagePost(createImagePostInput: CreateImagePostInput!): PostResponse!
   createComment(createCommentInput: CreateCommentInput!): PostResponse!

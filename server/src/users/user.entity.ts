@@ -51,6 +51,14 @@ export class User extends BaseEntity {
   @Column({ default: false })
   isGoogleAuthentication!: boolean;
 
+  @Field({ defaultValue: '' })
+  @Column({ default: '' })
+  about: string = '';
+
+  @Field({ defaultValue: '' })
+  @Column({ default: '' })
+  avatar: string = '';
+
   @OneToMany(() => Post, (post) => post.creator)
   posts!: Post[];
 

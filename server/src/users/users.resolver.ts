@@ -1,3 +1,4 @@
+import { HttpException, UseGuards } from '@nestjs/common';
 import {
   Args,
   Context,
@@ -10,11 +11,13 @@ import {
 import * as argon2 from 'argon2';
 import { Request } from 'express';
 import { COOKIE_NAME, FORGOT_PASSWORD_PREFIX } from 'src/constant/constant';
-import { ResponseErrorCode } from 'src/constant/errors';
+import { ResponseErrorCode, responseErrorMessages } from 'src/constant/errors';
+import { isAuth } from 'src/guards/isAuth';
 import { MailService } from 'src/mail/mail.service';
 import { RedisCacheService } from 'src/redisCache/redisCache.service';
 import { IResponse } from 'src/response/response.dto';
 import { createErrorResponse } from 'src/util/createErrors';
+import { createRandomAvatar } from 'src/util/createRandomAvatarLink';
 import { InputParameterValidator } from 'src/util/validators';
 import { vertificationPassword } from 'src/util/vertification';
 import { v4 } from 'uuid';
@@ -43,6 +46,12 @@ export class UsersResolver {
       return user.email;
     }
     return '';
+  }
+
+  @Query((returns) => User, { nullable: true })
+  async user(@Args('userName') userName: string) {
+    const user = await this.usersService.findByUserName(userName);
+    return user;
   }
 
   @Query((returns) => User, { nullable: true })
@@ -176,10 +185,12 @@ export class UsersResolver {
 
     //hash the password
     const hashedPassword = await argon2.hash(registerInput.password);
+    const avatar = await createRandomAvatar(registerInput.username);
     const returnedUser = await this.usersService.createUser({
       ...registerInput,
       password: hashedPassword,
       role: UserRole.NORMAL_USER,
+      avatar: avatar,
     });
     req.session.userId = returnedUser.id;
     return { data: returnedUser };
@@ -264,4 +275,38 @@ export class UsersResolver {
       });
     }
   }
+
+  @Mutation((returns) => User)
+  @UseGuards(isAuth)
+  async changeUserAvatar(
+    @Args('avatarSeed') avatarSeed: string,
+    @Context() { req }: { req: Request },
+  ): Promise<User> {
+    const avatar = await createRandomAvatar(avatarSeed);
+
+    const affected = await this.usersService.updateUserAvatar(
+      req.session.userId!,
+      avatar,
+    );
+    if (!affected)
+      throw new HttpException(
+        responseErrorMessages.get(ResponseErrorCode.ERR0028)!,
+        401,
+      );
+
+    const user = await this.usersService.findByUserId(req.session.userId!);
+    return user!;
+  }
+
+  // @Mutation((returns) => Boolean)
+  // async generateAvatarForAllUser(): Promise<boolean> {
+  //   const users = await this.usersService.findAllUser();
+
+  //   users.forEach(async (user) => {
+  //     const avatar = await createRandomAvatar(user.username);
+  //     await this.usersService.updateUserAvatar(user.id, avatar);
+  //   });
+
+  //   return true;
+  // }
 }

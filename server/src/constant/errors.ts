@@ -26,6 +26,9 @@ export enum ResponseErrorCode {
   ERR0025,
   ERR0026,
   ERR0027,
+  ERR0028,
+  ERR0029,
+  ERR0030,
 }
 export const responseErrorMessages = new Map<ResponseErrorCode, string>([
   [ResponseErrorCode.ERR0001, 'only accept image-type file'],
@@ -64,4 +67,7 @@ export const responseErrorMessages = new Map<ResponseErrorCode, string>([
   [ResponseErrorCode.ERR0025, 'Post no longer exits.'],
   [ResponseErrorCode.ERR0026, 'Not the creator of that post.'],
   [ResponseErrorCode.ERR0027, 'Failed to delete that post.'],
+  [ResponseErrorCode.ERR0028, 'Failed to update avatar of user.'],
+  [ResponseErrorCode.ERR0029, 'No such user.'],
+  [ResponseErrorCode.ERR0030, 'Please login first.'],
 ]);
