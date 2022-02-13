@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { Post } from 'src/posts/post.entity';
+import { User } from 'src/users/user.entity';
 import { Connection } from 'typeorm';
 import { Upvote } from './upvote.entity';
 
@@ -17,10 +18,21 @@ export class UpvotesService {
       newUpvote.postId = postId;
       newUpvote.value = value;
 
+      const post = await queryRunner.manager.findOne(Post, {
+        relations: ['creator'],
+        where: { id: postId },
+      });
+
       await queryRunner.manager.save(newUpvote);
       await queryRunner.manager.increment(
         Post,
         { id: postId },
+        'points',
+        points,
+      );
+      await queryRunner.manager.increment(
+        User,
+        { id: post?.creator.id },
         'points',
         points,
       );

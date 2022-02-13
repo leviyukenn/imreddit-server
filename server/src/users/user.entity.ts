@@ -1,4 +1,4 @@
-import { Field, ObjectType } from '@nestjs/graphql';
+import { Field, ObjectType, Int } from '@nestjs/graphql';
 import { Post } from 'src/posts/post.entity';
 import { Role } from 'src/role/role.entity';
 import { Topic } from 'src/topic/topic.entity';
@@ -54,6 +54,10 @@ export class User extends BaseEntity {
   @Field({ defaultValue: '' })
   @Column({ default: '' })
   about: string = '';
+
+  @Field((type) => Int)
+  @Column({ type: 'int', default: 0 })
+  points!: number;
 
   @Field({ defaultValue: '' })
   @Column({ default: '' })

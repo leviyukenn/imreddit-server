@@ -40,6 +40,12 @@ type Image {
   link: String
 }
 
+type Upvote {
+  userId: String!
+  postId: String!
+  value: Int!
+}
+
 type Post {
   id: String!
   createdAt: String!
@@ -66,6 +72,7 @@ type User {
   role: String!
   email: String!
   about: String!
+  points: Int!
   avatar: String!
 }
 
@@ -130,6 +137,7 @@ type Query {
   community(communityName: String!): Community
   userRoles(userId: String!): [Role]!
   userRole(communityId: String!, userId: String!): Role
+  getUpvote(postId: String!): Upvote
   topics: [Topic!]!
 }
 

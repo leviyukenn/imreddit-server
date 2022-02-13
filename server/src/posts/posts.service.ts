@@ -155,6 +155,7 @@ export class PostsService {
       await queryRunner.commitTransaction();
       return affected;
     } catch (err) {
+      console.log(err);
       // since we have errors lets rollback the changes we made
       await queryRunner.rollbackTransaction();
       throw new Error(err);
@@ -177,10 +178,7 @@ export class PostsService {
     return rawPosts.map((post) => post.post_ancestorId as string);
   }
 
-  async findUserComments(
-    userId: string,
-    ancestorId: string,
-  ): Promise<Post[]> {
+  async findUserComments(userId: string, ancestorId: string): Promise<Post[]> {
     const comments = Post.find({
       relations: ['ancestor', 'creator'],
       where: { ancestor: { id: ancestorId }, creator: { id: userId } },

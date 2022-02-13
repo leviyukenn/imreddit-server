@@ -439,6 +439,7 @@ export class PostsResolver {
     }
 
     const affected = await this.postsService.remove(postId).catch(() => null);
+    
 
     if (!affected) {
       return createErrorResponse({

@@ -1,5 +1,5 @@
 import { UseGuards } from '@nestjs/common';
-import { Args, Context, Int, Mutation, Resolver } from '@nestjs/graphql';
+import { Args, Context, Int, Mutation, Query, Resolver } from '@nestjs/graphql';
 import { Request } from 'express';
 import { isAuth } from 'src/guards/isAuth';
 import { VoteInput } from './upvote.dto';
@@ -44,5 +44,14 @@ export class UpvotesResolver {
       realValue,
       points,
     );
+  }
+
+  @Query((returns) => Upvote, { nullable: true })
+  @UseGuards(isAuth)
+  async getUpvote(
+    @Args('postId') postId: string,
+    @Context() { req }: { req: Request },
+  ) {
+    return this.upvotesService.findUpvote(req.session.userId!, postId);
   }
 }
