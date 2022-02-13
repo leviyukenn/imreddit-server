@@ -96,6 +96,18 @@ export class InputParameterValidator {
     return this;
   }
 
+  validateUserAbout(about: string) {
+    const field = 'about';
+
+    if (about.length > 300) {
+      this.fieldErrors.push({
+        field,
+        errorCode: ResponseErrorCode.ERR0031,
+      });
+    }
+    return this;
+  }
+
   isValid() {
     return this.fieldErrors.length === 0;
   }

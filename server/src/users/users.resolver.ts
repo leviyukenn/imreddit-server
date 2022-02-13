@@ -309,4 +309,36 @@ export class UsersResolver {
 
   //   return true;
   // }
+  @Mutation((returns) => UserResponse)
+  @UseGuards(isAuth)
+  async editUserAbout(
+    @Args('about') about: string,
+    @Context() { req }: { req: Request },
+  ): Promise<IResponse<User>> {
+    const validator = InputParameterValidator.object().validateUserAbout(about);
+    if (!validator.isValid()) {
+      return validator.getErrorResponse();
+    }
+
+    const updatedRows = await this.usersService.editUserAbout(
+      req.session.userId!,
+      about,
+    );
+    if (!updatedRows) {
+      return createErrorResponse({
+        field: 'about',
+        errorCode: ResponseErrorCode.ERR0032,
+      });
+    }
+
+    const user = await this.usersService.findByUserId(req.session.userId!);
+    if (!user) {
+      return createErrorResponse({
+        field: 'user',
+        errorCode: ResponseErrorCode.ERR0029,
+      });
+    }
+
+    return { data: user };
+  }
 }

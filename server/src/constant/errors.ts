@@ -29,6 +29,8 @@ export enum ResponseErrorCode {
   ERR0028,
   ERR0029,
   ERR0030,
+  ERR0031,
+  ERR0032,
 }
 export const responseErrorMessages = new Map<ResponseErrorCode, string>([
   [ResponseErrorCode.ERR0001, 'only accept image-type file'],
@@ -70,4 +72,6 @@ export const responseErrorMessages = new Map<ResponseErrorCode, string>([
   [ResponseErrorCode.ERR0028, 'Failed to update avatar of user.'],
   [ResponseErrorCode.ERR0029, 'No such user.'],
   [ResponseErrorCode.ERR0030, 'Please login first.'],
+  [ResponseErrorCode.ERR0031, 'User about must be less than 300 characters'],
+  [ResponseErrorCode.ERR0032, 'Failed to save user settings.'],
 ]);

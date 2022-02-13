@@ -149,6 +149,7 @@ type Mutation {
   logout: Boolean!
   googleAuthentication(idToken: String!): UserResponse!
   changeUserAvatar(avatarSeed: String!): User!
+  editUserAbout(about: String!): UserResponse!
   createTextPost(createTextPostInput: CreateTextPostInput!): PostResponse!
   createImagePost(createImagePostInput: CreateImagePostInput!): PostResponse!
   createComment(createCommentInput: CreateCommentInput!): PostResponse!
