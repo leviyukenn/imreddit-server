@@ -54,6 +54,7 @@ type Post {
   text: String
   points: Int!
   postType: Int!
+  postStatus: Int!
   totalComments: Int!
   layer: Int!
   creator: User!
@@ -153,6 +154,7 @@ type Mutation {
   createTextPost(createTextPostInput: CreateTextPostInput!): PostResponse!
   createImagePost(createImagePostInput: CreateImagePostInput!): PostResponse!
   createComment(createCommentInput: CreateCommentInput!): PostResponse!
+  changePostStatus(postStatus: Int!, postId: String!): PostResponse!
   deleteMyPost(postId: String!): DeletePostResponse!
   uploadImage(image: Upload!): UploadResponse!
   createCommunity(createCommunityInput: CreateCommunityInput!): CommunityResponse!

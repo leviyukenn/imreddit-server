@@ -15,6 +15,7 @@ import { FileUpload, GraphQLUpload } from 'graphql-upload';
 import { CommunityService } from 'src/communities/community.service';
 import { ResponseErrorCode } from 'src/constant/errors';
 import { isAuth } from 'src/guards/isAuth';
+import { isPostModerator } from 'src/guards/isPostModerator';
 import { IResponse } from 'src/response/response.dto';
 import { RoleService } from 'src/role/role.service';
 import { UpvotesService } from 'src/upvotes/upvotes.service';
@@ -35,7 +36,7 @@ import {
   PostResponse,
   UploadResponse,
 } from './dto/post.dto';
-import { Post, PostType } from './post.entity';
+import { Post, PostStatus, PostType } from './post.entity';
 import { PostsService } from './posts.service';
 
 @Resolver(Post)
@@ -85,7 +86,7 @@ export class PostsResolver {
       upvoteType ? 1 : -1,
     );
     const options: FindManyOptions<Post> = {
-      where: { id: In(postIds), postType: Not(2) },
+      where: { id: In(postIds), postType: Not(PostType.COMMENT) },
       order: { createdAt: 'DESC' },
       relations: ['creator', 'ancestor', 'community'],
     };
@@ -148,11 +149,11 @@ export class PostsResolver {
     @Args('cursor', { nullable: true }) cursor: string,
     @Args('userName') userName: string,
   ): Promise<PaginatedPosts> {
+    const user = await this.userService.findByUserName(userName);
+    if (!user) throw new Error('no such user');
+
     const options: FindManyOptions<Post> = {
-      where: [
-        { postType: PostType.TEXT_POST },
-        { postType: PostType.IMAGE_POST },
-      ],
+      where: { postType: Not(PostType.COMMENT), creator: { id: user.id } },
       order: { createdAt: 'DESC' },
       relations: ['creator', 'ancestor', 'community'],
     };
@@ -161,22 +162,11 @@ export class PostsResolver {
       options.take = limit + 1;
     }
     if (cursor) {
-      options.where = (options.where as FindConditions<Post>[]).map(
-        (condition) => ({
-          ...condition,
-          createdAt: LessThan(new Date(parseInt(cursor))),
-        }),
-      );
+      options.where = {
+        ...(options.where as FindConditions<Post>),
+        createdAt: LessThan(new Date(parseInt(cursor))),
+      };
     }
-
-    const user = await this.userService.findByUserName(userName);
-    if (!user) throw new Error('no such user');
-    options.where = (options.where as FindConditions<Post>[]).map(
-      (condition) => ({
-        ...condition,
-        creator: { id: user.id },
-      }),
-    );
 
     const posts = await this.postsService.find(options);
 
@@ -192,11 +182,14 @@ export class PostsResolver {
     @Args('cursor', { nullable: true }) cursor: string,
     @Args('communityName') communityName: string,
   ): Promise<PaginatedPosts> {
+    const community = await this.communityService.findByName(communityName);
+    if (!community) throw Error('no such commnunity');
     const options: FindManyOptions<Post> = {
-      where: [
-        { postType: PostType.TEXT_POST },
-        { postType: PostType.IMAGE_POST },
-      ],
+      where: {
+        postType: Not(PostType.COMMENT),
+        community: { id: community.id },
+        postStatus: Not(PostStatus.REMOVED),
+      },
       order: { createdAt: 'DESC' },
       relations: ['creator', 'ancestor', 'community'],
     };
@@ -205,22 +198,11 @@ export class PostsResolver {
       options.take = limit + 1;
     }
     if (cursor) {
-      options.where = (options.where as FindConditions<Post>[]).map(
-        (condition) => ({
-          ...condition,
-          createdAt: LessThan(new Date(parseInt(cursor))),
-        }),
-      );
+      options.where = {
+        ...(options.where as FindConditions<Post>),
+        createdAt: LessThan(new Date(parseInt(cursor))),
+      };
     }
-
-    const community = await this.communityService.findByName(communityName);
-    if (!community) throw Error('no such commnunity');
-    options.where = (options.where as FindConditions<Post>[]).map(
-      (condition) => ({
-        ...condition,
-        community: { id: community.id },
-      }),
-    );
 
     const posts = await this.postsService.find(options);
 
@@ -236,10 +218,10 @@ export class PostsResolver {
     @Args('cursor', { nullable: true }) cursor: string,
   ): Promise<PaginatedPosts> {
     const options: FindManyOptions<Post> = {
-      where: [
-        { postType: PostType.TEXT_POST },
-        { postType: PostType.IMAGE_POST },
-      ],
+      where: {
+        postType: Not(PostType.COMMENT),
+        postStatus: Not(PostStatus.REMOVED),
+      },
       order: { createdAt: 'DESC' },
       relations: ['creator', 'ancestor', 'community'],
     };
@@ -248,12 +230,10 @@ export class PostsResolver {
       options.take = limit + 1;
     }
     if (cursor) {
-      options.where = (options.where as FindConditions<Post>[]).map(
-        (condition) => ({
-          ...condition,
-          createdAt: LessThan(new Date(parseInt(cursor))),
-        }),
-      );
+      options.where = {
+        ...(options.where as FindConditions<Post>),
+        createdAt: LessThan(new Date(parseInt(cursor))),
+      };
     }
 
     const posts = await this.postsService.find(options);
@@ -267,10 +247,10 @@ export class PostsResolver {
   @Query((returns) => [Post], { name: 'allPosts' })
   async getAllPosts(): Promise<Post[]> {
     const options: FindManyOptions<Post> = {
-      where: [
-        { postType: PostType.TEXT_POST },
-        { postType: PostType.IMAGE_POST },
-      ],
+      where: {
+        postType: Not(PostType.COMMENT),
+        postStatus: Not(PostStatus.REMOVED),
+      },
       order: { createdAt: 'DESC' },
       relations: ['creator', 'ancestor', 'community'],
     };
@@ -407,6 +387,37 @@ export class PostsResolver {
 
     return { data: post };
   }
+
+  @Mutation((returns) => PostResponse)
+  @UseGuards(isPostModerator)
+  async changePostStatus(
+    @Args('postId') postId: string,
+    @Args('postStatus', { type: () => Int }) postStatus: number,
+    @Context() { req }: { req: Request },
+  ): Promise<IResponse<Post>> {
+    if (!(postStatus in PostStatus)) {
+      return createErrorResponse({
+        field: 'postStatus',
+        errorCode: ResponseErrorCode.ERR0034,
+      });
+    }
+
+    const affected = await this.postsService.updatePostStatus(
+      postId,
+      postStatus,
+    );
+
+    if (!affected) {
+      return createErrorResponse({
+        field: 'postId',
+        errorCode: ResponseErrorCode.ERR0035,
+      });
+    }
+
+    const post = await this.postsService.findByUserIdWithRemovedPost(postId);
+
+    return { data: post };
+  }
   // @Mutation((returns) => Post, { nullable: true })
   // async updatePost(@Args('updatePostInput') updatePostInput: UpdatePostInput) {
   //   const { id, title } = updatePostInput;
@@ -439,7 +450,6 @@ export class PostsResolver {
     }
 
     const affected = await this.postsService.remove(postId).catch(() => null);
-    
 
     if (!affected) {
       return createErrorResponse({
@@ -451,6 +461,7 @@ export class PostsResolver {
   }
 
   @Mutation(() => UploadResponse)
+  @UseGuards(isAuth)
   async uploadImage(
     @Args({ name: 'image', type: () => GraphQLUpload })
     { createReadStream, filename, mimetype }: FileUpload,

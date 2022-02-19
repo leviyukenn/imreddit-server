@@ -31,6 +31,9 @@ export enum ResponseErrorCode {
   ERR0030,
   ERR0031,
   ERR0032,
+  ERR0033,
+  ERR0034,
+  ERR0035,
 }
 export const responseErrorMessages = new Map<ResponseErrorCode, string>([
   [ResponseErrorCode.ERR0001, 'only accept image-type file'],
@@ -74,4 +77,7 @@ export const responseErrorMessages = new Map<ResponseErrorCode, string>([
   [ResponseErrorCode.ERR0030, 'Please login first.'],
   [ResponseErrorCode.ERR0031, 'User about must be less than 300 characters'],
   [ResponseErrorCode.ERR0032, 'Failed to save user settings.'],
+  [ResponseErrorCode.ERR0033, 'Not the moderator of that community'],
+  [ResponseErrorCode.ERR0034, 'Invalid post status.'],
+  [ResponseErrorCode.ERR0035, 'Failed to update post status of that post.'],
 ]);

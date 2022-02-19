@@ -1,13 +1,5 @@
 import { HttpException, UseGuards } from '@nestjs/common';
-import {
-  Args,
-  Context,
-  Mutation,
-  Query,
-  ResolveField,
-  Resolver,
-  Root,
-} from '@nestjs/graphql';
+import { Args, Context, Mutation, Query, ResolveField, Resolver, Root } from '@nestjs/graphql';
 import * as argon2 from 'argon2';
 import { Request } from 'express';
 import { COOKIE_NAME, FORGOT_PASSWORD_PREFIX } from 'src/constant/constant';
@@ -21,13 +13,7 @@ import { createRandomAvatar } from 'src/util/createRandomAvatarLink';
 import { InputParameterValidator } from 'src/util/validators';
 import { vertificationPassword } from 'src/util/vertification';
 import { v4 } from 'uuid';
-import {
-  CompleteResponse,
-  ForgotPasswordInput,
-  LoginInput,
-  RegisterInput,
-  UserResponse,
-} from './dto/user.dto';
+import { CompleteResponse, ForgotPasswordInput, LoginInput, RegisterInput, UserResponse } from './dto/user.dto';
 import { User, UserRole } from './user.entity';
 import { UsersService } from './users.service';
 
@@ -291,7 +277,7 @@ export class UsersResolver {
     if (!affected)
       throw new HttpException(
         responseErrorMessages.get(ResponseErrorCode.ERR0028)!,
-        401,
+        201,
       );
 
     const user = await this.usersService.findByUserId(req.session.userId!);

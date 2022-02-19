@@ -21,6 +21,12 @@ export enum PostType {
   COMMENT,
 }
 
+export enum PostStatus {
+  NOT_APPROVED,
+  APPROVED,
+  REMOVED,
+}
+
 @ObjectType()
 @Entity()
 export class Post extends BaseEntity {
@@ -51,6 +57,10 @@ export class Post extends BaseEntity {
   @Field((type) => Int)
   @Column({ type: 'int', default: 0 })
   postType!: PostType;
+
+  @Field((type) => Int)
+  @Column({ type: 'int', default: 0 })
+  postStatus!: PostStatus;
 
   @Field((type) => Int, { defaultValue: 0 })
   totalComments!: number;

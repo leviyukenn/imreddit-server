@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { Upvote } from 'src/upvotes/upvote.entity';
-import { Connection, getManager } from 'typeorm';
+import { Connection, getManager, Not } from 'typeorm';
 import { FindManyOptions } from 'typeorm/find-options/FindManyOptions';
 import {
   CreateImagePostInput,
@@ -8,7 +8,7 @@ import {
 } from './dto/create-post.dto';
 import { CreateCommentInput } from './dto/createComment.dto';
 import { Image } from './image.entity';
-import { Post, PostType } from './post.entity';
+import { Post, PostStatus, PostType } from './post.entity';
 
 @Injectable()
 export class PostsService {
@@ -124,6 +124,13 @@ export class PostsService {
 
   async findOne(postId: string): Promise<Post | undefined> {
     return Post.findOne(postId, {
+      where: { postStatus: Not(PostStatus.REMOVED) },
+      relations: ['creator', 'children', 'community', 'ancestor'],
+    });
+  }
+
+  async findByUserIdWithRemovedPost(postId: string): Promise<Post | undefined> {
+    return Post.findOne(postId, {
       relations: ['creator', 'children', 'community', 'ancestor'],
     });
   }
@@ -155,7 +162,6 @@ export class PostsService {
       await queryRunner.commitTransaction();
       return affected;
     } catch (err) {
-      console.log(err);
       // since we have errors lets rollback the changes we made
       await queryRunner.rollbackTransaction();
       throw new Error(err);
@@ -184,5 +190,21 @@ export class PostsService {
       where: { ancestor: { id: ancestorId }, creator: { id: userId } },
     });
     return comments;
+  }
+
+  async updatePostStatus(
+    postId: string,
+    postStatus: PostStatus,
+  ): Promise<number | undefined> {
+    const result = await this.connection
+      .createQueryBuilder()
+      .update(Post)
+      .set({ postStatus })
+      .where('id = :postId', {
+        postId,
+      })
+      .execute();
+
+    return result.affected;
   }
 }

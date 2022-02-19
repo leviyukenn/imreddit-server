@@ -20,7 +20,7 @@ export class isAuth implements CanActivate {
     if (!req.session.userId) {
       throw new HttpException(
         responseErrorMessages.get(ResponseErrorCode.ERR0030)!,
-        401,
+        201,
       );
     }
 
@@ -29,7 +29,7 @@ export class isAuth implements CanActivate {
     if (!user)
       throw new HttpException(
         responseErrorMessages.get(ResponseErrorCode.ERR0029)!,
-        401,
+        201,
       );
     return true;
   }
