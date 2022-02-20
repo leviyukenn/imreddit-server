@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { Upvote } from 'src/upvotes/upvote.entity';
-import { Connection, getManager, Not } from 'typeorm';
+import { Connection, getManager } from 'typeorm';
 import { FindManyOptions } from 'typeorm/find-options/FindManyOptions';
 import {
   CreateImagePostInput,
@@ -124,7 +124,6 @@ export class PostsService {
 
   async findOne(postId: string): Promise<Post | undefined> {
     return Post.findOne(postId, {
-      where: { postStatus: Not(PostStatus.REMOVED) },
       relations: ['creator', 'children', 'community', 'ancestor'],
     });
   }
