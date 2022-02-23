@@ -48,6 +48,7 @@ export class CommunityService {
       });
       return community;
     } catch (err) {
+      console.log(err)
       await queryRunner.rollbackTransaction();
       throw new Error(err);
     } finally {
