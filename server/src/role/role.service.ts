@@ -1,5 +1,4 @@
 import { Injectable } from '@nestjs/common';
-import { Community } from 'src/communities/community.entity';
 import { Connection } from 'typeorm';
 import { Role } from './role.entity';
 
@@ -8,11 +7,14 @@ export class RoleService {
   constructor(private connection: Connection) {}
 
   async findByUserId(userId: string) {
-    return Role.find({ userId });
+    return Role.find({ where: { userId }, relations: ['community'] });
   }
 
   async findByUserIdAndCommunityId(userId: string, communityId: string) {
-    return Role.findOne({ userId, communityId });
+    return Role.findOne({
+      where: { userId, communityId },
+      relations: ['community'],
+    });
   }
 
   async joinCommunity(
@@ -56,5 +58,4 @@ export class RoleService {
 
     return this.findByUserIdAndCommunityId(userId, communityId);
   }
-
 }

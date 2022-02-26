@@ -13,7 +13,7 @@ import { RoleService } from './role.service';
 export class RoleResolver {
   constructor(private readonly roleService: RoleService) {}
 
-  @Query((returns) => [Role], { name: 'userRoles', nullable: 'items' })
+  @Query((returns) => [Role], { name: 'userRoles' })
   async getUserRoles(@Args('userId') userId: string): Promise<Role[]> {
     const userRoles = await this.roleService.findByUserId(userId);
 

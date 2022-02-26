@@ -19,6 +19,7 @@ export class Role extends BaseEntity {
   @PrimaryColumn()
   communityId!: string;
 
+  @Field((type) => Community)
   @ManyToOne(() => Community, (comunity) => comunity.membersRole)
   community!: Community;
 

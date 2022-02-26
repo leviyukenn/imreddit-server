@@ -5,6 +5,7 @@
 type Role {
   userId: String!
   communityId: String!
+  community: Community!
   joinedAt: String!
   isMember: Boolean!
   isModerator: Boolean!
@@ -136,7 +137,7 @@ type Query {
   postDetail(postId: String!): Post
   communities(userId: String): [Community!]!
   community(communityName: String!): Community
-  userRoles(userId: String!): [Role]!
+  userRoles(userId: String!): [Role!]!
   userRole(communityId: String!, userId: String!): Role
   getUpvote(postId: String!): Upvote
   topics: [Topic!]!
