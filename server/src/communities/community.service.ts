@@ -48,7 +48,7 @@ export class CommunityService {
       });
       return community;
     } catch (err) {
-      console.log(err)
+      console.log(err);
       await queryRunner.rollbackTransaction();
       throw new Error(err);
     } finally {
@@ -85,8 +85,12 @@ export class CommunityService {
     const communities = await getManager()
       .createQueryBuilder(Community, 'community')
       .innerJoin('community.membersRole', 'role')
-      .where('role.userId = :userId', { userId: userId })
+      .where(
+        'role.userId = :userId AND (role.isMember = :isMember OR role.isModerator = :isModerator)',
+        { userId: userId, isMember: true, isModerator: true },
+      )
       .getMany();
+
     return communities;
   }
 

@@ -8,11 +8,15 @@ import {
 import { GqlExecutionContext } from '@nestjs/graphql';
 import { Request } from 'express';
 import { ResponseErrorCode, responseErrorMessages } from 'src/constant/errors';
+import { PostsService } from 'src/posts/posts.service';
 import { RoleService } from 'src/role/role.service';
 
 @Injectable()
-export class isModerator implements CanActivate {
-  constructor(private readonly roleService: RoleService) {}
+export class isCreator implements CanActivate {
+  constructor(
+    private readonly roleService: RoleService,
+    private readonly postsService: PostsService,
+  ) {}
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const { req } = GqlExecutionContext.create(context).getContext<{
       req: Request;
@@ -24,22 +28,28 @@ export class isModerator implements CanActivate {
       );
     }
     const args = GqlExecutionContext.create(context).getArgs();
-    if (!(args?.communityId && typeof args.communityId === 'string')) {
-      return false;
+    if (!(args?.postId && typeof args.postId === 'string')) {
+      throw new HttpException(
+        responseErrorMessages.get(ResponseErrorCode.ERR0036)!,
+        HttpStatus.FORBIDDEN,
+      );
     }
-    const communityId = args.communityId as string;
+    const postId = args.postId as string;
 
-    const role = await this.roleService.findByUserIdAndCommunityId(
-      req.session.userId,
-      communityId,
-    );
+    const post = await this.postsService.findOne(postId);
 
-    if (role?.isModerator) {
+    if (!post)
+      throw new HttpException(
+        responseErrorMessages.get(ResponseErrorCode.ERR0025)!,
+        HttpStatus.FORBIDDEN,
+      );
+
+    if (post.creator.id === req.session.userId) {
       return true;
     }
 
     throw new HttpException(
-      responseErrorMessages.get(ResponseErrorCode.ERR0033)!,
+      responseErrorMessages.get(ResponseErrorCode.ERR0026)!,
       HttpStatus.FORBIDDEN,
     );
   }

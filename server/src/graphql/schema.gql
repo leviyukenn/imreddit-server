@@ -114,11 +114,6 @@ type PostResponse {
   post: Post
 }
 
-type DeletePostResponse {
-  errors: [FieldError!]
-  postId: String
-}
-
 type UploadResponse {
   errors: [FieldError!]
   path: String
@@ -132,7 +127,7 @@ type Query {
   userCommentedPosts(userName: String!, cursor: String, limit: Int): PaginatedPosts!
   userPosts(userName: String!, cursor: String, limit: Int): PaginatedPosts!
   communityPosts(communityName: String!, cursor: String, limit: Int): PaginatedPosts!
-  paginatedPosts(cursor: String, limit: Int): PaginatedPosts!
+  paginatedPosts(cursor: String, limit: Int, userId: String, orderType: Int): PaginatedPosts!
   allPosts: [Post!]!
   postDetail(postId: String!): Post
   communities(userId: String): [Community!]!
@@ -156,7 +151,7 @@ type Mutation {
   createImagePost(createImagePostInput: CreateImagePostInput!): PostResponse!
   createComment(createCommentInput: CreateCommentInput!): PostResponse!
   changePostStatus(postStatus: Int!, postId: String!): PostResponse!
-  deleteMyPost(postId: String!): DeletePostResponse!
+  deleteMyPost(postId: String!): String!
   uploadImage(image: Upload!): UploadResponse!
   createCommunity(createCommunityInput: CreateCommunityInput!): CommunityResponse!
   editCommunityDescription(description: String!, communityId: String!): CommunityResponse!

@@ -1,6 +1,17 @@
 import { Injectable } from '@nestjs/common';
+import { Community } from 'src/communities/community.entity';
+import { CommunityService } from 'src/communities/community.service';
 import { Upvote } from 'src/upvotes/upvote.entity';
-import { Connection, getManager } from 'typeorm';
+import {
+  Between,
+  Connection,
+  FindConditions,
+  getManager,
+  In,
+  LessThan,
+  LessThanOrEqual,
+  Not,
+} from 'typeorm';
 import { FindManyOptions } from 'typeorm/find-options/FindManyOptions';
 import {
   CreateImagePostInput,
@@ -12,7 +23,10 @@ import { Post, PostStatus, PostType } from './post.entity';
 
 @Injectable()
 export class PostsService {
-  constructor(private connection: Connection) {}
+  constructor(
+    private connection: Connection,
+    private readonly communityService: CommunityService,
+  ) {}
 
   async createTextPost(
     createPostInput: CreateTextPostInput & { creatorId: string },
@@ -205,5 +219,160 @@ export class PostsService {
       .execute();
 
     return result.affected;
+  }
+
+  async findTopPointsPaginatedPosts(
+    options: FindManyOptions<Post>,
+    limit?: number,
+    cursor?: string,
+  ) {
+    options.order = { points: 'DESC' };
+
+    if (limit) {
+      options.take = limit + 1;
+    }
+
+    if (cursor) {
+      options.where = {
+        ...(options.where as FindConditions<Post>),
+        points: LessThanOrEqual(parseInt(cursor)),
+      };
+    }
+
+    return Post.find(options);
+  }
+
+  async findNewPaginatedPosts(
+    options: FindManyOptions<Post>,
+    limit?: number,
+    cursor?: string,
+  ) {
+    options.order = { createdAt: 'DESC' };
+    if (limit) {
+      options.take = limit + 1;
+    }
+    if (cursor) {
+      options.where = {
+        ...(options.where as FindConditions<Post>),
+        createdAt: LessThan(new Date(parseInt(cursor))),
+      };
+    }
+    console.log(options);
+
+    return Post.find(options);
+  }
+
+  async findNewHomePosts(
+    userId?: string,
+    communityId?: string,
+    limit?: number,
+    cursor?: string,
+  ) {
+    const options: FindManyOptions<Post> = {
+      where: {
+        postType: Not(PostType.COMMENT),
+        postStatus: Not(PostStatus.REMOVED),
+      },
+      relations: ['creator', 'ancestor', 'community'],
+    };
+
+    if (communityId) {
+      options.where = {
+        ...(options.where as FindConditions<Post>),
+        community: { id: communityId },
+      };
+    }
+
+    if (userId && !communityId) {
+      const communitiesUserJoined = await this.communityService
+        .findByUserId(userId)
+        .catch(() => [] as Community[]);
+      const communityIdsUserJoined = communitiesUserJoined.map(
+        (community) => community.id,
+      );
+      if (communityIdsUserJoined.length !== 0) {
+        options.where = {
+          ...(options.where as FindConditions<Post>),
+          community: { id: In(communityIdsUserJoined) },
+        };
+      }
+    }
+
+    return this.findNewPaginatedPosts(options, limit, cursor);
+  }
+
+  async findNewUserPosts(userId?: string, limit?: number, cursor?: string) {
+    const options: FindManyOptions<Post> = {
+      where: { postType: Not(PostType.COMMENT), creator: { id: userId } },
+      relations: ['creator', 'ancestor', 'community'],
+    };
+
+    return this.findNewPaginatedPosts(options, limit, cursor);
+  }
+
+  async findTopPointsHomePosts(
+    until?: Date,
+    userId?: string,
+    communityId?: string,
+    limit?: number,
+    cursor?: string,
+  ) {
+    const options: FindManyOptions<Post> = {
+      where: {
+        postType: Not(PostType.COMMENT),
+        postStatus: Not(PostStatus.REMOVED),
+      },
+      relations: ['creator', 'ancestor', 'community'],
+    };
+    if (until) {
+      options.where = {
+        ...(options.where as FindConditions<Post>),
+        createdAt: Between(until, new Date()),
+      };
+    }
+
+    if (communityId) {
+      options.where = {
+        ...(options.where as FindConditions<Post>),
+        community: { id: communityId },
+      };
+    }
+
+    if (userId && !communityId) {
+      const communitiesUserJoined = await this.communityService
+        .findByUserId(userId)
+        .catch(() => [] as Community[]);
+      const communityIdsUserJoined = communitiesUserJoined.map(
+        (community) => community.id,
+      );
+      if (communityIdsUserJoined.length !== 0) {
+        options.where = {
+          ...(options.where as FindConditions<Post>),
+          community: { id: In(communityIdsUserJoined) },
+        };
+      }
+    }
+
+    return this.findTopPointsPaginatedPosts(options, limit, cursor);
+  }
+
+  async findTopPointsUserPosts(
+    until?: Date,
+    userId?: string,
+    limit?: number,
+    cursor?: string,
+  ) {
+    const options: FindManyOptions<Post> = {
+      where: { postType: Not(PostType.COMMENT), creator: { id: userId } },
+      relations: ['creator', 'ancestor', 'community'],
+    };
+    if (until) {
+      options.where = {
+        ...(options.where as FindConditions<Post>),
+        createdAt: Between(until, new Date()),
+      };
+    }
+
+    return this.findTopPointsPaginatedPosts(options, limit, cursor);
   }
 }

@@ -1,4 +1,4 @@
-import { UseGuards } from '@nestjs/common';
+import { HttpException, HttpStatus, UseGuards } from '@nestjs/common';
 import {
   Args,
   Context,
@@ -13,14 +13,16 @@ import { Request } from 'express';
 import { createWriteStream } from 'fs';
 import { FileUpload, GraphQLUpload } from 'graphql-upload';
 import { CommunityService } from 'src/communities/community.service';
-import { ResponseErrorCode } from 'src/constant/errors';
+import { ResponseErrorCode, responseErrorMessages } from 'src/constant/errors';
 import { isAuth } from 'src/guards/isAuth';
+import { isCreator } from 'src/guards/isCreator';
 import { isPostModerator } from 'src/guards/isPostModerator';
 import { IResponse } from 'src/response/response.dto';
 import { RoleService } from 'src/role/role.service';
 import { UpvotesService } from 'src/upvotes/upvotes.service';
 import { UsersService } from 'src/users/users.service';
 import { createErrorResponse } from 'src/util/createErrors';
+import { getSubDateBasedOnOrderType } from 'src/util/getSubDateBasedOnOrderType';
 import { InputParameterValidator } from 'src/util/validators';
 import { FindConditions, In, LessThan, Not } from 'typeorm';
 import { FindManyOptions } from 'typeorm/find-options/FindManyOptions';
@@ -31,7 +33,7 @@ import {
 } from './dto/create-post.dto';
 import { CreateCommentInput } from './dto/createComment.dto';
 import {
-  DeletePostResponse,
+  OrderType,
   PaginatedPosts,
   PostResponse,
   UploadResponse,
@@ -150,7 +152,11 @@ export class PostsResolver {
     @Args('userName') userName: string,
   ): Promise<PaginatedPosts> {
     const user = await this.userService.findByUserName(userName);
-    if (!user) throw new Error('no such user');
+    if (!user)
+      throw new HttpException(
+        responseErrorMessages.get(ResponseErrorCode.ERR0029)!,
+        HttpStatus.NOT_FOUND,
+      );
 
     const options: FindManyOptions<Post> = {
       where: { postType: Not(PostType.COMMENT), creator: { id: user.id } },
@@ -183,7 +189,11 @@ export class PostsResolver {
     @Args('communityName') communityName: string,
   ): Promise<PaginatedPosts> {
     const community = await this.communityService.findByName(communityName);
-    if (!community) throw Error('no such commnunity');
+    if (!community)
+      throw new HttpException(
+        responseErrorMessages.get(ResponseErrorCode.ERR0014)!,
+        HttpStatus.NOT_FOUND,
+      );
     const options: FindManyOptions<Post> = {
       where: {
         postType: Not(PostType.COMMENT),
@@ -214,29 +224,33 @@ export class PostsResolver {
 
   @Query((returns) => PaginatedPosts, { name: 'paginatedPosts' })
   async getPaginatedPosts(
+    @Args('orderType', { type: () => Int, nullable: true }) orderType: number,
+    @Args('userId', { type: () => String, nullable: true }) userId: string,
     @Args('limit', { type: () => Int, nullable: true }) limit: number,
     @Args('cursor', { nullable: true }) cursor: string,
   ): Promise<PaginatedPosts> {
-    const options: FindManyOptions<Post> = {
-      where: {
-        postType: Not(PostType.COMMENT),
-        postStatus: Not(PostStatus.REMOVED),
-      },
-      order: { createdAt: 'DESC' },
-      relations: ['creator', 'ancestor', 'community'],
-    };
-
-    if (limit) {
-      options.take = limit + 1;
-    }
-    if (cursor) {
-      options.where = {
-        ...(options.where as FindConditions<Post>),
-        createdAt: LessThan(new Date(parseInt(cursor))),
-      };
+    if (!(orderType in OrderType)) {
+      orderType = OrderType.NEW;
     }
 
-    const posts = await this.postsService.find(options);
+    let posts: Post[];
+    if (orderType === OrderType.NEW) {
+      posts = await this.postsService.findNewHomePosts(
+        userId,
+        undefined,
+        limit,
+        cursor,
+      );
+    } else {
+      const until = getSubDateBasedOnOrderType(orderType);
+      posts = await this.postsService.findTopPointsHomePosts(
+        until,
+        userId,
+        undefined,
+        limit,
+        cursor,
+      );
+    }
 
     return {
       posts: posts.slice(0, limit),
@@ -435,29 +449,26 @@ export class PostsResolver {
   //   return this.postsService.save(post);
   // }
 
-  @Mutation((returns) => DeletePostResponse)
-  @UseGuards(isAuth)
+  @Mutation((returns) => String)
+  @UseGuards(isCreator)
   async deleteMyPost(
     @Args({ name: 'postId', type: () => String }) postId: string,
     @Context() { req }: { req: Request },
-  ): Promise<IResponse<string>> {
-    const post = await this.postsService.findOne(postId);
-    if (!post?.creator || post?.creator.id !== req.session.userId) {
-      return createErrorResponse({
-        field: 'postId',
-        errorCode: ResponseErrorCode.ERR0026,
-      });
-    }
-
-    const affected = await this.postsService.remove(postId).catch(() => null);
+  ): Promise<string> {
+    const affected = await this.postsService.remove(postId).catch(() => {
+      throw new HttpException(
+        responseErrorMessages.get(ResponseErrorCode.ERR0036)!,
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    });
 
     if (!affected) {
-      return createErrorResponse({
-        field: 'postId',
-        errorCode: ResponseErrorCode.ERR0027,
-      });
+      throw new HttpException(
+        responseErrorMessages.get(ResponseErrorCode.ERR0027)!,
+        HttpStatus.NOT_MODIFIED,
+      );
     }
-    return { data: postId };
+    return postId;
   }
 
   @Mutation(() => UploadResponse)

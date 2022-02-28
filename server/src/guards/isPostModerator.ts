@@ -2,6 +2,7 @@ import {
   CanActivate,
   ExecutionContext,
   HttpException,
+  HttpStatus,
   Injectable,
 } from '@nestjs/common';
 import { GqlExecutionContext } from '@nestjs/graphql';
@@ -23,7 +24,7 @@ export class isPostModerator implements CanActivate {
     if (!req.session.userId) {
       throw new HttpException(
         responseErrorMessages.get(ResponseErrorCode.ERR0030)!,
-        201,
+        HttpStatus.FORBIDDEN,
       );
     }
     const args = GqlExecutionContext.create(context).getArgs();
@@ -36,7 +37,7 @@ export class isPostModerator implements CanActivate {
     if (!post?.community.id) {
       throw new HttpException(
         responseErrorMessages.get(ResponseErrorCode.ERR0025)!,
-        201,
+        HttpStatus.FORBIDDEN,
       );
     }
 
@@ -50,7 +51,7 @@ export class isPostModerator implements CanActivate {
     }
     throw new HttpException(
       responseErrorMessages.get(ResponseErrorCode.ERR0033)!,
-      201,
+      HttpStatus.FORBIDDEN,
     );
   }
 }

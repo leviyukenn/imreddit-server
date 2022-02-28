@@ -2,6 +2,7 @@ import {
   CanActivate,
   ExecutionContext,
   HttpException,
+  HttpStatus,
   Injectable,
 } from '@nestjs/common';
 import { GqlExecutionContext } from '@nestjs/graphql';
@@ -20,7 +21,7 @@ export class isAuth implements CanActivate {
     if (!req.session.userId) {
       throw new HttpException(
         responseErrorMessages.get(ResponseErrorCode.ERR0030)!,
-        201,
+        HttpStatus.FORBIDDEN,
       );
     }
 
@@ -29,7 +30,7 @@ export class isAuth implements CanActivate {
     if (!user)
       throw new HttpException(
         responseErrorMessages.get(ResponseErrorCode.ERR0029)!,
-        201,
+        HttpStatus.FORBIDDEN,
       );
     return true;
   }
