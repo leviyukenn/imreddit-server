@@ -9,7 +9,6 @@ import {
   getManager,
   In,
   LessThan,
-  LessThanOrEqual,
   Not,
 } from 'typeorm';
 import { FindManyOptions } from 'typeorm/find-options/FindManyOptions';
@@ -235,11 +234,12 @@ export class PostsService {
     if (cursor) {
       options.where = {
         ...(options.where as FindConditions<Post>),
-        points: LessThanOrEqual(parseInt(cursor)),
+        points: LessThan(parseInt(cursor)),
       };
     }
 
-    return Post.find(options);
+    const posts = await Post.find(options);
+    return posts;
   }
 
   async findNewPaginatedPosts(
@@ -257,7 +257,6 @@ export class PostsService {
         createdAt: LessThan(new Date(parseInt(cursor))),
       };
     }
-    console.log(options);
 
     return Post.find(options);
   }
