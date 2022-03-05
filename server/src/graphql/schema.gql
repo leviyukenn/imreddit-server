@@ -125,13 +125,14 @@ type Query {
   userComments(ancestorId: String!, userName: String!): [Post!]!
   userUpvotedPosts(cursor: String, limit: Int, upvoteType: Int!, userName: String!): PaginatedPosts!
   userCommentedPosts(userName: String!, cursor: String, limit: Int): PaginatedPosts!
-  userPosts(userName: String!, cursor: String, limit: Int): PaginatedPosts!
-  communityPosts(communityName: String!, cursor: String, limit: Int): PaginatedPosts!
+  userPosts(userName: String!, cursor: String, limit: Int, orderType: Int): PaginatedPosts!
+  communityPosts(communityName: String!, cursor: String, limit: Int, orderType: Int): PaginatedPosts!
   paginatedPosts(cursor: String, limit: Int, userId: String, orderType: Int): PaginatedPosts!
   allPosts: [Post!]!
   postDetail(postId: String!): Post
   communities(userId: String): [Community!]!
   community(communityName: String!): Community
+  searchCommunities(communityName: String!): [Community!]!
   userRoles(userId: String!): [Role!]!
   userRole(communityId: String!, userId: String!): Role
   getUpvote(postId: String!): Upvote

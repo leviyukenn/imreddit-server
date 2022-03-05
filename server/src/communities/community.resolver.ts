@@ -172,4 +172,11 @@ export class CommunityResolver {
     }
     return { data: community };
   }
+
+  @Query((returns) => [Community], { name: 'searchCommunities' })
+  async searchCommunities(
+    @Args('communityName') communityName: string,
+  ): Promise<Community[]> {
+    return this.communityService.searchCommunities(communityName);
+  }
 }

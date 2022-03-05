@@ -61,7 +61,11 @@ export class PostsResolver {
     @Args('ancestorId') ancestorId: string,
   ): Promise<Post[]> {
     const user = await this.userService.findByUserName(userName);
-    if (!user) throw new Error('no such user');
+    if (!user)
+      throw new HttpException(
+        responseErrorMessages.get(ResponseErrorCode.ERR0029)!,
+        HttpStatus.NOT_FOUND,
+      );
 
     const comments = await this.postsService.findUserComments(
       user.id,
@@ -79,7 +83,11 @@ export class PostsResolver {
     @Args('cursor', { nullable: true }) cursor: string,
   ): Promise<PaginatedPosts> {
     const user = await this.userService.findByUserName(userName);
-    if (!user) throw new Error('no such user');
+    if (!user)
+      throw new HttpException(
+        responseErrorMessages.get(ResponseErrorCode.ERR0029)!,
+        HttpStatus.NOT_FOUND,
+      );
 
     if (!(upvoteType === 0 || upvoteType === 1))
       throw new Error('invalid upvoteType');
@@ -118,7 +126,11 @@ export class PostsResolver {
     @Args('userName') userName: string,
   ): Promise<PaginatedPosts> {
     const user = await this.userService.findByUserName(userName);
-    if (!user) throw new Error('no such user');
+    if (!user)
+      throw new HttpException(
+        responseErrorMessages.get(ResponseErrorCode.ERR0029)!,
+        HttpStatus.NOT_FOUND,
+      );
 
     const postIds = await this.postsService.findAllPostsUserCommented(user.id);
     const options: FindManyOptions<Post> = {
@@ -147,6 +159,7 @@ export class PostsResolver {
 
   @Query((returns) => PaginatedPosts, { name: 'userPosts' })
   async getUserPosts(
+    @Args('orderType', { type: () => Int, nullable: true }) orderType: number,
     @Args('limit', { type: () => Int, nullable: true }) limit: number,
     @Args('cursor', { nullable: true }) cursor: string,
     @Args('userName') userName: string,
@@ -158,23 +171,26 @@ export class PostsResolver {
         HttpStatus.NOT_FOUND,
       );
 
-    const options: FindManyOptions<Post> = {
-      where: { postType: Not(PostType.COMMENT), creator: { id: user.id } },
-      order: { createdAt: 'DESC' },
-      relations: ['creator', 'ancestor', 'community'],
-    };
-
-    if (limit) {
-      options.take = limit + 1;
-    }
-    if (cursor) {
-      options.where = {
-        ...(options.where as FindConditions<Post>),
-        createdAt: LessThan(new Date(parseInt(cursor))),
-      };
+    if (!(orderType in OrderType)) {
+      orderType = OrderType.NEW;
     }
 
-    const posts = await this.postsService.find(options);
+    let posts: Post[];
+    if (orderType === OrderType.NEW) {
+      posts = await this.postsService.findNewUserPosts(
+        user.id,
+        limit,
+        cursor,
+      );
+    } else {
+      const until = getSubDateBasedOnOrderType(orderType);
+      posts = await this.postsService.findTopPointsUserPosts(
+        until,
+        user.id,
+        limit,
+        cursor,
+      );
+    }
 
     return {
       posts: posts.slice(0, limit),
@@ -184,6 +200,7 @@ export class PostsResolver {
 
   @Query((returns) => PaginatedPosts, { name: 'communityPosts' })
   async getCommunityPosts(
+    @Args('orderType', { type: () => Int, nullable: true }) orderType: number,
     @Args('limit', { type: () => Int, nullable: true }) limit: number,
     @Args('cursor', { nullable: true }) cursor: string,
     @Args('communityName') communityName: string,
@@ -194,28 +211,28 @@ export class PostsResolver {
         responseErrorMessages.get(ResponseErrorCode.ERR0014)!,
         HttpStatus.NOT_FOUND,
       );
-    const options: FindManyOptions<Post> = {
-      where: {
-        postType: Not(PostType.COMMENT),
-        community: { id: community.id },
-        postStatus: Not(PostStatus.REMOVED),
-      },
-      order: { createdAt: 'DESC' },
-      relations: ['creator', 'ancestor', 'community'],
-    };
-
-    if (limit) {
-      options.take = limit + 1;
-    }
-    if (cursor) {
-      options.where = {
-        ...(options.where as FindConditions<Post>),
-        createdAt: LessThan(new Date(parseInt(cursor))),
-      };
+    if (!(orderType in OrderType)) {
+      orderType = OrderType.NEW;
     }
 
-    const posts = await this.postsService.find(options);
-
+    let posts: Post[];
+    if (orderType === OrderType.NEW) {
+      posts = await this.postsService.findNewHomePosts(
+        undefined,
+        community.id,
+        limit,
+        cursor,
+      );
+    } else {
+      const until = getSubDateBasedOnOrderType(orderType);
+      posts = await this.postsService.findTopPointsHomePosts(
+        until,
+        undefined,
+        community.id,
+        limit,
+        cursor,
+      );
+    }
     return {
       posts: posts.slice(0, limit),
       hasMore: posts.length === limit + 1,

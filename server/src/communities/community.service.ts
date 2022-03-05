@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { Role } from 'src/role/role.entity';
-import { Connection, getManager, getRepository } from 'typeorm';
+import { Connection, getManager, getRepository, Like } from 'typeorm';
 import { CreateCommunityInput } from './community.dto';
 import { Community } from './community.entity';
 
@@ -48,7 +48,6 @@ export class CommunityService {
       });
       return community;
     } catch (err) {
-      console.log(err);
       await queryRunner.rollbackTransaction();
       throw new Error(err);
     } finally {
@@ -127,5 +126,13 @@ export class CommunityService {
       .execute();
 
     return result.affected;
+  }
+
+  async searchCommunities(communityName: string) {
+    const communities = await Community.find({
+      where: { name: Like(`%${communityName}%`) },
+      relations: ['topics'],
+    });
+    return communities;
   }
 }
