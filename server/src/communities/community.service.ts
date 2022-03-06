@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { Role } from 'src/role/role.entity';
-import { Connection, getManager, getRepository, Like } from 'typeorm';
+import { Connection, getManager, getRepository, Like, ILike } from 'typeorm';
 import { CreateCommunityInput } from './community.dto';
 import { Community } from './community.entity';
 
@@ -130,7 +130,7 @@ export class CommunityService {
 
   async searchCommunities(communityName: string) {
     const communities = await Community.find({
-      where: { name: Like(`%${communityName}%`) },
+      where: { name: ILike(`%${communityName}%`) },
       relations: ['topics'],
     });
     return communities;
