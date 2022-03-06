@@ -7,6 +7,7 @@ import {
   Connection,
   FindConditions,
   getManager,
+  ILike,
   In,
   LessThan,
   Not,
@@ -300,13 +301,55 @@ export class PostsService {
     return this.findNewPaginatedPosts(options, limit, cursor);
   }
 
-  async findNewUserPosts(userId?: string, limit?: number, cursor?: string) {
+  async findNewUserPosts(userId: string, limit?: number, cursor?: string) {
     const options: FindManyOptions<Post> = {
       where: { postType: Not(PostType.COMMENT), creator: { id: userId } },
       relations: ['creator', 'ancestor', 'community'],
     };
 
     return this.findNewPaginatedPosts(options, limit, cursor);
+  }
+
+  async findNewSearchPosts(
+    keyword: string,
+    communityId?: string,
+    limit?: number,
+    cursor?: string,
+  ) {
+    const options: FindManyOptions<Post> = {
+      where: [
+        {
+          postType: Not(PostType.COMMENT),
+          postStatus: Not(PostStatus.REMOVED),
+          text: ILike(`%${keyword}%`),
+        },
+        {
+          postType: Not(PostType.COMMENT),
+          postStatus: Not(PostStatus.REMOVED),
+          title: ILike(`%${keyword}%`),
+        },
+      ],
+      relations: ['creator', 'ancestor', 'community'],
+    };
+
+    if (cursor) {
+      options.where = (options.where as FindConditions<Post>[]).map(
+        (option) => ({
+          ...option,
+          createdAt: LessThan(new Date(parseInt(cursor))),
+        }),
+      );
+    }
+    if (communityId) {
+      options.where = (options.where as FindConditions<Post>[]).map(
+        (option) => ({
+          ...option,
+          community: { id: communityId },
+        }),
+      );
+    }
+
+    return this.findNewPaginatedPosts(options, limit);
   }
 
   async findTopPointsHomePosts(
@@ -373,5 +416,55 @@ export class PostsService {
     }
 
     return this.findTopPointsPaginatedPosts(options, limit, cursor);
+  }
+
+  async findTopSearchPosts(
+    keyword: string,
+    communityId?: string,
+    until?: Date,
+    limit?: number,
+    cursor?: string,
+  ) {
+    const options: FindManyOptions<Post> = {
+      where: [
+        {
+          postType: Not(PostType.COMMENT),
+          postStatus: Not(PostStatus.REMOVED),
+          text: ILike(`%${keyword}%`),
+        },
+        {
+          postType: Not(PostType.COMMENT),
+          postStatus: Not(PostStatus.REMOVED),
+          title: ILike(`%${keyword}%`),
+        },
+      ],
+      relations: ['creator', 'ancestor', 'community'],
+    };
+    if (until) {
+      options.where = (options.where as FindConditions<Post>[]).map(
+        (option) => ({
+          ...option,
+          createdAt: Between(until, new Date()),
+        }),
+      );
+    }
+    if (cursor) {
+      options.where = (options.where as FindConditions<Post>[]).map(
+        (option) => ({
+          ...option,
+          points: LessThan(parseInt(cursor)),
+        }),
+      );
+    }
+    if (communityId) {
+      options.where = (options.where as FindConditions<Post>[]).map(
+        (option) => ({
+          ...option,
+          community: { id: communityId },
+        }),
+      );
+    }
+
+    return this.findNewPaginatedPosts(options, limit);
   }
 }

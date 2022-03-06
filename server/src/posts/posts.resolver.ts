@@ -157,6 +157,48 @@ export class PostsResolver {
     };
   }
 
+  @Query((returns) => PaginatedPosts, { name: 'searchPosts' })
+  async searchPosts(
+    @Args('orderType', { type: () => Int, nullable: true }) orderType: number,
+    @Args('limit', { type: () => Int, nullable: true }) limit: number,
+    @Args('cursor', { nullable: true }) cursor: string,
+    @Args('keyword') keyword: string,
+    @Args('communityName', { nullable: true }) communityName?: string,
+  ): Promise<PaginatedPosts> {
+    let communityId: string | undefined;
+    if (communityName) {
+      const community = await this.communityService.findByName(communityName);
+      if (community) communityId = community.id;
+    }
+    if (!(orderType in OrderType)) {
+      orderType = OrderType.NEW;
+    }
+
+    let posts: Post[];
+    if (orderType === OrderType.NEW) {
+      posts = await this.postsService.findNewSearchPosts(
+        keyword,
+        communityId,
+        limit,
+        cursor,
+      );
+    } else {
+      const until = getSubDateBasedOnOrderType(orderType);
+      posts = await this.postsService.findTopSearchPosts(
+        keyword,
+        communityId,
+        until,
+        limit,
+        cursor,
+      );
+    }
+
+    return {
+      posts: posts.slice(0, limit),
+      hasMore: posts.length === limit + 1,
+    };
+  }
+
   @Query((returns) => PaginatedPosts, { name: 'userPosts' })
   async getUserPosts(
     @Args('orderType', { type: () => Int, nullable: true }) orderType: number,
@@ -177,11 +219,7 @@ export class PostsResolver {
 
     let posts: Post[];
     if (orderType === OrderType.NEW) {
-      posts = await this.postsService.findNewUserPosts(
-        user.id,
-        limit,
-        cursor,
-      );
+      posts = await this.postsService.findNewUserPosts(user.id, limit, cursor);
     } else {
       const until = getSubDateBasedOnOrderType(orderType);
       posts = await this.postsService.findTopPointsUserPosts(
