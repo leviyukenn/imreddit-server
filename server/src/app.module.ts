@@ -1,5 +1,5 @@
 import { MiddlewareConsumer, Module } from '@nestjs/common';
-import { ConfigModule } from '@nestjs/config';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 import { GraphQLModule } from '@nestjs/graphql';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { TypeOrmModule } from '@nestjs/typeorm';
@@ -43,14 +43,18 @@ import { UsersModule } from './users/users.module';
           autoLoadEntities: true,
         }),
     }),
-    GraphQLModule.forRoot({
-      autoSchemaFile: join(process.cwd(), 'src/graphql/schema.gql'),
-      cors: {
-        origin: 'http://localhost:3005',
-        credentials: true,
-      },
-      playground: true,
-      uploads: false,
+    GraphQLModule.forRootAsync({
+      imports: [ConfigModule],
+      useFactory: (configService: ConfigService) => ({
+        autoSchemaFile: join(process.cwd(), 'src/graphql/schema.gql'),
+        cors: {
+          origin: configService.get('FRONTEND_LOCAL_DOMAIN'),
+          credentials: true,
+        },
+        playground: true,
+        uploads: false,
+      }),
+      inject: [ConfigService],
     }),
     MailModule,
   ],
