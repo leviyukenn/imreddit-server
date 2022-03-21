@@ -1,0 +1,228 @@
+# ------------------------------------------------------
+# THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
+# ------------------------------------------------------
+
+type Role {
+  userId: String!
+  communityId: String!
+  community: Community!
+  joinedAt: String!
+  isMember: Boolean!
+  isModerator: Boolean!
+}
+
+type Topic {
+  id: String!
+  createdAt: String!
+  updatedAt: String!
+  creator: User!
+  title: String!
+}
+
+type Community {
+  id: String!
+  createdAt: String!
+  updatedAt: String!
+  name: String!
+  description: String!
+  background: String!
+  backgroundColor: String!
+  bannerColor: String!
+  icon: String!
+  banner: String!
+  topics: [Topic!]!
+  totalMemberships: Int!
+}
+
+type Image {
+  id: String!
+  path: String!
+  caption: String
+  link: String
+}
+
+type Upvote {
+  userId: String!
+  postId: String!
+  value: Int!
+}
+
+type Post {
+  id: String!
+  createdAt: String!
+  updatedAt: String!
+  title: String
+  text: String
+  points: Int!
+  postType: Int!
+  postStatus: Int!
+  totalComments: Int!
+  layer: Int!
+  creator: User!
+  community: Community!
+  children: [Post!]!
+  ancestor: Post
+  descendant: [Post!]!
+  images: [Image!]!
+}
+
+type User {
+  id: String!
+  createdAt: String!
+  updatedAt: String!
+  username: String!
+  role: String!
+  email: String!
+  about: String!
+  points: Int!
+  avatar: String!
+}
+
+type FieldError {
+  field: String!
+  errorCode: String!
+  message: String!
+}
+
+type CompleteResponse {
+  errors: [FieldError!]
+  isComplete: Boolean
+}
+
+type UserResponse {
+  errors: [FieldError!]
+  user: User
+}
+
+type RoleResponse {
+  errors: [FieldError!]
+  role: Role
+}
+
+type CommunityResponse {
+  errors: [FieldError!]
+  community: Community
+}
+
+type PaginatedPosts {
+  posts: [Post!]!
+  hasMore: Boolean!
+}
+
+type PostResponse {
+  errors: [FieldError!]
+  post: Post
+}
+
+type UploadResponse {
+  errors: [FieldError!]
+  path: String
+}
+
+type Query {
+  user(userName: String!): User
+  me: User
+  userComments(ancestorId: String!, userName: String!): [Post!]!
+  userUpvotedPosts(cursor: String, limit: Int, upvoteType: Int!, userName: String!): PaginatedPosts!
+  userCommentedPosts(userName: String!, cursor: String, limit: Int): PaginatedPosts!
+  searchPosts(communityName: String, keyword: String!, cursor: String, limit: Int, orderType: Int): PaginatedPosts!
+  userPosts(userName: String!, cursor: String, limit: Int, orderType: Int): PaginatedPosts!
+  communityPosts(communityName: String!, cursor: String, limit: Int, orderType: Int): PaginatedPosts!
+  paginatedPosts(cursor: String, limit: Int, userId: String, orderType: Int): PaginatedPosts!
+  allPosts: [Post!]!
+  postDetail(postId: String!): Post
+  communities(userId: String): [Community!]!
+  community(communityName: String!): Community
+  searchCommunities(communityName: String!): [Community!]!
+  userRoles(userId: String!): [Role!]!
+  userRole(communityId: String!, userId: String!): Role
+  getUpvote(postId: String!): Upvote
+  topics: [Topic!]!
+}
+
+type Mutation {
+  changePassword(newPassword: String!, token: String!): UserResponse!
+  forgotPassword(forgotPasswordInput: ForgotPasswordInput!): CompleteResponse!
+  register(userInput: RegisterInput!): UserResponse!
+  login(userInput: LoginInput!): UserResponse!
+  logout: Boolean!
+  googleAuthentication(idToken: String!): UserResponse!
+  changeUserAvatar(avatarSeed: String!): User!
+  editUserAbout(about: String!): UserResponse!
+  createTextPost(createTextPostInput: CreateTextPostInput!): PostResponse!
+  createImagePost(createImagePostInput: CreateImagePostInput!): PostResponse!
+  createComment(createCommentInput: CreateCommentInput!): PostResponse!
+  changePostStatus(postStatus: Int!, postId: String!): PostResponse!
+  deleteMyPost(postId: String!): String!
+  uploadImage(image: Upload!): UploadResponse!
+  createCommunity(createCommunityInput: CreateCommunityInput!): CommunityResponse!
+  editCommunityDescription(description: String!, communityId: String!): CommunityResponse!
+  setCommunityAppearance(communityAppearance: CommunityAppearanceInput!, communityId: String!): CommunityResponse!
+  joinCommunity(userId: String!, communityId: String!): RoleResponse!
+  leaveCommunity(userId: String!, communityId: String!): RoleResponse!
+  vote(voteInput: VoteInput!): Int!
+  createTopic(title: String!): Topic!
+}
+
+input ForgotPasswordInput {
+  username: String!
+  email: String!
+}
+
+input RegisterInput {
+  username: String!
+  email: String!
+  password: String!
+}
+
+input LoginInput {
+  username: String!
+  password: String!
+}
+
+input CreateTextPostInput {
+  title: String!
+  text: String!
+  communityId: String!
+}
+
+input CreateImagePostInput {
+  title: String!
+  images: [ImageInput!]!
+  communityId: String!
+}
+
+input ImageInput {
+  path: String!
+  caption: String
+  link: String
+}
+
+input CreateCommentInput {
+  text: String!
+  parentId: String!
+  ancestorId: String!
+  communityId: String!
+}
+
+"""The `Upload` scalar type represents a file upload."""
+scalar Upload
+
+input CreateCommunityInput {
+  name: String!
+  description: String!
+  topicIds: [String!]!
+}
+
+input CommunityAppearanceInput {
+  background: String!
+  banner: String!
+  icon: String!
+  backgroundColor: String!
+  bannerColor: String!
+}
+
+input VoteInput {
+  postId: String!
+  value: Int!
+}
