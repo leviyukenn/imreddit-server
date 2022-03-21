@@ -23,3 +23,22 @@ services:
       - /home/ec2-user/imreddit/redis/data:/data
     networks:
       - imreddit_net
+    command: redis-server /usr/local/etc/redis/redis.conf
+
+  postgres:
+    image: postgres:9.5.20
+    container_name: postgres
+    hostname: postgres
+    ports:
+      - '5432:5432'
+    volumes:
+      - /home/ec2-user/postgres_data:/var/lib/postgresql/data
+
+    environment:
+      POSTGRES_PASSWORD: 'postgres'
+      POSTGRES_DB: 'imreddit'
+    networks:
+      - imreddit_net
+
+networks:
+  imreddit_net: {}
