@@ -1,5 +1,3 @@
-version: '1'
-
 services:
   imreddit:
     image: imreddit:1.0
@@ -7,7 +5,7 @@ services:
     ports:
       - '3000:3000'
     volumes:
-      - /Users/yokunu/CS/frontend/imreddit/server/public:/home/local/app/public
+      - /home/ec2-user/imreddit/server/public:/home/local/app/public
     networks:
       - imreddit_net
     depends_on:
@@ -16,26 +14,12 @@ services:
 
   redis:
     image: redis:6.0.8
+    container_name: redis
+    hostname: redis
     ports:
       - '6379:6379'
     volumes:
-      - /Users/yokunu/CS/frontend/imreddit/redis/redis.conf:/usr/local/etc/redis/redis.conf
-      - /Users/yokunu/CS/frontend/imreddit/redis/data:/data
+      - /home/ec2-user/imreddit/redis/redis.conf:/usr/local/etc/redis/redis.conf
+      - /home/ec2-user/imreddit/redis/data:/data
     networks:
       - imreddit_net
-    command: redis-server --bind redis --port 6379
-
-  postgres:
-    image: postgres:9.5.20
-    ports:
-      - '5432:5432'
-    volumes:
-      - /Users/yokunu/DataBase/postgresql_container:/var/lib/postgresql/data
-
-    environment:
-      POSTGRES_PASSWORD: 'postgres'
-    networks:
-      - imreddit_net
-
-networks:
-  imreddit_net: {}

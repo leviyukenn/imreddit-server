@@ -16,7 +16,13 @@ async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   //use redis to store session
   const RedisStore = connectRedis(session);
-  const redisClient = redis.createClient();
+  const redisClient = redis.createClient(
+    parseInt(process.env.REDIS_SERVER_PORT || '6379'),
+    process.env.REDIS_SERVER,
+    {
+      password: process.env.REDIS_SERVER_PASSWORD,
+    },
+  );
   // app.useStaticAssets(join(__dirname, '..', 'public'), {
   //   index: false,
   //   prefix: '/public',
