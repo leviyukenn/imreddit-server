@@ -3,7 +3,7 @@
 /node_modules
 
 # uploaded resources
-/public
+/public/resources/uploadedImages/*
 
 # Logs
 logs
