@@ -2,8 +2,6 @@
 /dist
 /node_modules
 
-# uploaded resources
-/public/resources/uploadedImages/*
 
 # Logs
 logs
