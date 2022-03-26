@@ -1,6 +1,6 @@
 {
   "type": "postgres",
-  "host": "postgres",
+  "host": "ip-10-0-2-10.ap-northeast-1.compute.internal",
   "port": 5432,
   "username": "postgres",
   "password": "postgres",
