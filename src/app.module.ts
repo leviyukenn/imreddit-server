@@ -48,7 +48,8 @@ import { UsersModule } from './users/users.module';
       useFactory: (configService: ConfigService) => ({
         autoSchemaFile: join(process.cwd(), 'src/graphql/schema.gql'),
         cors: {
-          origin: configService.get('FRONTEND_LOCAL_DOMAIN'),
+          // origin: configService.get('FRONTEND_LOCAL_DOMAIN'),
+          origin: true,
           credentials: true,
         },
         playground: true,
@@ -60,7 +61,7 @@ import { UsersModule } from './users/users.module';
   ],
 })
 export class AppModule {
-  constructor(private connection: Connection) {}
+  constructor(private connection: Connection) { }
   configure(consumer: MiddlewareConsumer) {
     consumer.apply(graphqlUploadExpress()).forRoutes('graphql');
   }
