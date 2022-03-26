@@ -2,14 +2,16 @@ services:
   imreddit:
     image: yokunu/imreddit:main
     container_name: imreddit_server
+    hostname: imreddit_server
     ports:
       - '3000:3000'
     volumes:
-      - /home/ec2-user/imreddit/server/public:/home/local/app/public
+      - /home/ec2-user/split_imreddit/imreddit/server/public:/home/local/app/public
     networks:
       - imreddit_net
     depends_on:
       - redis
+      - nginx
 
   redis:
     image: redis:6.0.8
@@ -23,6 +25,17 @@ services:
     networks:
       - imreddit_net
     command: redis-server /usr/local/etc/redis/redis.conf
+
+  nginx:
+    image: nginx:latest
+    container_name: nginx
+    hostname: nginx
+    ports:
+      - '80:80'
+    volumes:
+      - /home/ec2-user/split_imreddit/imreddit/conf.d:/etc/nginx/conf.d
+    networks:
+      - imreddit_net
 
 
 networks:
