@@ -1,16 +1,17 @@
 services:
   imreddit:
-    image: imreddit:1.0
+    image: yokunu/imreddit:main
     container_name: imreddit_server
+    hostname: imreddit_server
     ports:
       - '3000:3000'
     volumes:
-      - /home/ec2-user/imreddit/server/public:/home/local/app/public
+      - /home/ec2-user/split_imreddit/imreddit/server/public:/home/local/app/public
     networks:
       - imreddit_net
     depends_on:
       - redis
-      - postgres
+      - nginx
 
   redis:
     image: redis:6.0.8
@@ -19,26 +20,23 @@ services:
     ports:
       - '6379:6379'
     volumes:
-      - /home/ec2-user/imreddit/redis/redis.conf:/usr/local/etc/redis/redis.conf
-      - /home/ec2-user/imreddit/redis/data:/data
+      - /usr/local/etc/redis/redis.conf:/usr/local/etc/redis/redis.conf
+      - /usr/local/etc/redis/data:/data
     networks:
       - imreddit_net
     command: redis-server /usr/local/etc/redis/redis.conf
 
-  postgres:
-    image: postgres:9.5.20
-    container_name: postgres
-    hostname: postgres
+  nginx:
+    image: nginx:latest
+    container_name: nginx
+    hostname: nginx
     ports:
-      - '5432:5432'
+      - '80:80'
     volumes:
-      - /home/ec2-user/postgres_data:/var/lib/postgresql/data
-
-    environment:
-      POSTGRES_PASSWORD: 'postgres'
-      POSTGRES_DB: 'imreddit'
+      - /home/ec2-user/split_imreddit/imreddit/conf.d:/etc/nginx/conf.d
     networks:
       - imreddit_net
+
 
 networks:
   imreddit_net: {}
