@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Auth, google } from 'googleapis';
+import { createRandomAvatar } from 'src/util/createRandomAvatarLink';
 import { Connection } from 'typeorm';
 import { User, UserRole } from './user.entity';
 
@@ -68,12 +69,15 @@ export class UsersService {
     while (user) {
       //generate user name randomly
       userName = Math.random().toString(36).substr(2, 9);
+      console.log(userName);
       user = await this.findByUserName(userName);
     }
 
+    const avatar = await createRandomAvatar(userName);
     user = await User.create({
-      username: userName!,
+      username: userName,
       email: payload.email,
+      avatar,
       isGoogleAuthentication: true,
     }).save();
 
