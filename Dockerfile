@@ -5,8 +5,6 @@ WORKDIR $WORKSPACE
 
 COPY dist ./dist
 COPY package*.json ./
-COPY ormconfig.json ./
-COPY .env ./
 
 RUN npm install --only=production
 

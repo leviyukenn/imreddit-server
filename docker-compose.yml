@@ -6,7 +6,8 @@ services:
     ports:
       - '3000:3000'
     volumes:
-      - /home/ec2-user/split_imreddit/imreddit/server/public:/home/local/app/public
+      - ${PUBLIC_RESOURCES_DIR}:/home/local/app/public
+      - ${ENVIROMENT_VARIABLES_DIR}:/home/local/app/config/env
     networks:
       - imreddit_net
     depends_on:
@@ -20,8 +21,8 @@ services:
     ports:
       - '6379:6379'
     volumes:
-      - /usr/local/etc/redis/redis.conf:/usr/local/etc/redis/redis.conf
-      - /usr/local/etc/redis/data:/data
+      - ${REDIS_CONFIG_FILE}:/usr/local/etc/redis/redis.conf
+      - ${REDIS_DATA_DIR}:/data
     networks:
       - imreddit_net
     command: redis-server /usr/local/etc/redis/redis.conf
@@ -33,10 +34,9 @@ services:
     ports:
       - '80:80'
     volumes:
-      - /home/ec2-user/split_imreddit/imreddit/conf.d:/etc/nginx/conf.d
+      - ${NGINX_CONFIG_DIR}:/etc/nginx/conf.d
     networks:
       - imreddit_net
-
 
 networks:
   imreddit_net: {}
