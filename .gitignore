@@ -1,7 +1,11 @@
 # compiled output
 /dist
 /node_modules
-/src/config/env/
+
+# enviroment variables
+/config/env/
+.env
+/conf.d/
 
 
 # Logs
