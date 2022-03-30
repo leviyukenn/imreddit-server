@@ -66,12 +66,11 @@ export class UsersService {
     if (user) return user;
 
     let userName = '';
-    while (user) {
+    do {
       //generate user name randomly
       userName = Math.random().toString(36).substr(2, 9);
-      console.log(userName);
       user = await this.findByUserName(userName);
-    }
+    } while (user);
 
     const avatar = await createRandomAvatar(userName);
     user = await User.create({
