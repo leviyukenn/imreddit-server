@@ -9,4 +9,4 @@ COPY package*.json ./
 RUN npm install --only=production
 
 
-CMD ["node","/home/local/app/dist/main"]
+CMD ["node","/home/local/app/dist/src/main"]
