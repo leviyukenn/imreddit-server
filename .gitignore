@@ -3,7 +3,7 @@
 /node_modules
 
 # enviroment variables
-/config/env/
+/env/
 .env
 /conf.d/
 

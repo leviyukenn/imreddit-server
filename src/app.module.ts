@@ -6,9 +6,9 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { graphqlUploadExpress } from 'graphql-upload';
 import { join } from 'path';
 import { Connection } from 'typeorm';
-import { configuration } from '../config/configuration';
-import { validationSchema } from '../config/envVariablesValidationSchema';
 import { CommunityModule } from './communities/community.module';
+import { configuration } from './config/configuration';
+import { validationSchema } from './config/envVariablesValidationSchema';
 import { MailModule } from './mail/mail.module';
 import { PostsModule } from './posts/posts.module';
 import { RoleModule } from './role/role.module';
@@ -31,7 +31,7 @@ import { UsersModule } from './users/users.module';
       },
     }),
     ConfigModule.forRoot({
-      envFilePath: `${process.cwd()}/config/env/.env.${process.env.NODE_ENV}`,
+      envFilePath: `${process.cwd()}/env/.env.${process.env.NODE_ENV}`,
       load: [configuration],
       validationSchema,
     }),

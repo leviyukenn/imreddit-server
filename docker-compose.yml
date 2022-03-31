@@ -7,7 +7,9 @@ services:
       - '3000:3000'
     volumes:
       - ${PUBLIC_RESOURCES_DIR}:/home/local/app/public
-      - ${ENVIROMENT_VARIABLES_DIR}:/home/local/app/config/env
+      - ${ENVIROMENT_VARIABLES_DIR}:/home/local/app/env
+    environment:
+      - NODE_ENV=production
     networks:
       - imreddit_net
     depends_on:
