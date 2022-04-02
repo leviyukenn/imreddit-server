@@ -1,5 +1,13 @@
 import { HttpException, UseGuards } from '@nestjs/common';
-import { Args, Context, Mutation, Query, ResolveField, Resolver, Root } from '@nestjs/graphql';
+import {
+  Args,
+  Context,
+  Mutation,
+  Query,
+  ResolveField,
+  Resolver,
+  Root,
+} from '@nestjs/graphql';
 import * as argon2 from 'argon2';
 import { Request } from 'express';
 import { COOKIE_NAME, FORGOT_PASSWORD_PREFIX } from 'src/constant/constant';
@@ -13,7 +21,13 @@ import { createRandomAvatar } from 'src/util/createRandomAvatarLink';
 import { InputParameterValidator } from 'src/util/validators';
 import { vertificationPassword } from 'src/util/vertification';
 import { v4 } from 'uuid';
-import { CompleteResponse, ForgotPasswordInput, LoginInput, RegisterInput, UserResponse } from './dto/user.dto';
+import {
+  CompleteResponse,
+  ForgotPasswordInput,
+  LoginInput,
+  RegisterInput,
+  UserResponse,
+} from './dto/user.dto';
 import { User, UserRole } from './user.entity';
 import { UsersService } from './users.service';
 
@@ -313,6 +327,50 @@ export class UsersResolver {
     if (!updatedRows) {
       return createErrorResponse({
         field: 'about',
+        errorCode: ResponseErrorCode.ERR0032,
+      });
+    }
+
+    const user = await this.usersService.findByUserId(req.session.userId!);
+    if (!user) {
+      return createErrorResponse({
+        field: 'user',
+        errorCode: ResponseErrorCode.ERR0029,
+      });
+    }
+
+    return { data: user };
+  }
+
+  @Mutation((returns) => UserResponse)
+  @UseGuards(isAuth)
+  async editUserName(
+    @Args('username') username: string,
+    @Context() { req }: { req: Request },
+  ): Promise<IResponse<User>> {
+    const validator = InputParameterValidator.object().validateUsername(
+      username,
+    );
+    if (!validator.isValid()) {
+      return validator.getErrorResponse();
+    }
+
+    const existingUser = await this.usersService.findByUserName(username);
+    //check whether the username exists
+    if (existingUser) {
+      return createErrorResponse({
+        field: 'username',
+        errorCode: ResponseErrorCode.ERR0010,
+      });
+    }
+
+    const updatedRows = await this.usersService.editUserName(
+      req.session.userId!,
+      username,
+    );
+    if (!updatedRows) {
+      return createErrorResponse({
+        field: 'username',
         errorCode: ResponseErrorCode.ERR0032,
       });
     }

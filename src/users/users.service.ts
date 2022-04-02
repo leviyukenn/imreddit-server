@@ -108,6 +108,19 @@ export class UsersService {
 
     return result.affected;
   }
+
+  async editUserName(userId: string, username: string) {
+    const result = await this.connection
+      .createQueryBuilder()
+      .update(User)
+      .set({ username })
+      .where('id = :userId', {
+        userId,
+      })
+      .execute();
+
+    return result.affected;
+  }
   // async remove(id: string): Promise<void> {
   //   await this.usersRepository.delete(id);
   // }
