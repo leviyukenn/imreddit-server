@@ -1,4 +1,5 @@
 import { NestFactory } from '@nestjs/core';
+import { NestExpressApplication } from '@nestjs/platform-express';
 import connectRedis from 'connect-redis';
 import session from 'express-session';
 import redis from 'redis';
@@ -13,7 +14,7 @@ declare module 'express-session' {
 }
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create<NestExpressApplication>(AppModule);
   //use redis to store session
   const RedisStore = connectRedis(session);
   const redisClient = redis.createClient(
@@ -27,6 +28,7 @@ async function bootstrap() {
   //   index: false,
   //   prefix: '/public',
   // });
+  app.set('trust proxy', true);
   app.use(
     session({
       name: COOKIE_NAME,
@@ -35,6 +37,7 @@ async function bootstrap() {
         maxAge: 1000 * 60 * 60 * 24, //1 day
         httpOnly: true,
         sameSite: 'none',
+        secure: true,
       },
       saveUninitialized: false,
       secret: 'fhiawHfiawhfiuaghw',
