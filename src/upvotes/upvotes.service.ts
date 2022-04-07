@@ -23,7 +23,7 @@ export class UpvotesService {
         where: { id: postId },
       });
 
-      await queryRunner.manager.save(newUpvote);
+      const savedVote = await queryRunner.manager.save(newUpvote);
       await queryRunner.manager.increment(
         Post,
         { id: postId },
@@ -38,11 +38,11 @@ export class UpvotesService {
       );
 
       await queryRunner.commitTransaction();
-      return points;
+      return savedVote;
     } catch (err) {
       // since we have errors lets rollback the changes we made
       await queryRunner.rollbackTransaction();
-      return 0;
+      return null;
     } finally {
       // you need to release a queryRunner which was manually instantiated
       await queryRunner.release();

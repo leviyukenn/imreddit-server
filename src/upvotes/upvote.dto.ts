@@ -1,4 +1,5 @@
-import { Field, InputType, Int } from '@nestjs/graphql';
+import { Field, InputType, Int, ObjectType } from '@nestjs/graphql';
+import { Upvote } from './upvote.entity';
 
 @InputType()
 export class VoteInput {
@@ -7,4 +8,13 @@ export class VoteInput {
 
   @Field(() => Int)
   value!: number;
+}
+
+@ObjectType()
+export class UpvoteResponse {
+  @Field((type) => Upvote)
+  upvote!: Upvote;
+
+  @Field((type) => Int)
+  points!: number;
 }

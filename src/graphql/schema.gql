@@ -104,6 +104,11 @@ type CommunityResponse {
   community: Community
 }
 
+type UpvoteResponse {
+  upvote: Upvote!
+  points: Int!
+}
+
 type PaginatedPosts {
   posts: [Post!]!
   hasMore: Boolean!
@@ -136,7 +141,7 @@ type Query {
   searchCommunities(communityName: String!): [Community!]!
   userRoles(userId: String!): [Role!]!
   userRole(communityId: String!, userId: String!): Role
-  getUpvote(postId: String!): Upvote
+  getUpvote(userId: String!, postId: String!): Upvote
   topics: [Topic!]!
 }
 
@@ -161,7 +166,7 @@ type Mutation {
   setCommunityAppearance(communityAppearance: CommunityAppearanceInput!, communityId: String!): CommunityResponse!
   joinCommunity(userId: String!, communityId: String!): RoleResponse!
   leaveCommunity(userId: String!, communityId: String!): RoleResponse!
-  vote(voteInput: VoteInput!): Int!
+  vote(voteInput: VoteInput!): UpvoteResponse!
   createTopic(title: String!): Topic!
 }
 
