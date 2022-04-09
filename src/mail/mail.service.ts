@@ -21,7 +21,7 @@ export class MailService {
       to: user.email,
       // from: '"Support Team" <support@example.com>', // override default from
       subject: 'Welcome to imreddit! Confirm your Email',
-      template: './reset-password',
+      template: 'reset-password',
       context: {
         // ✏️ filling curly brackets with content
         // name: user.username,

@@ -24,15 +24,6 @@ export class RegisterInput {
 }
 
 @InputType()
-export class ForgotPasswordInput {
-  @Field()
-  username!: string;
-
-  @Field()
-  email!: string;
-}
-
-@InputType()
 export class GoogleAuthenticationInput {
   @Field()
   authenticationCode!: string;

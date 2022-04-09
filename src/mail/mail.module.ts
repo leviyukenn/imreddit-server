@@ -3,6 +3,7 @@ import { HandlebarsAdapter } from '@nestjs-modules/mailer/dist/adapters/handleba
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { join } from 'path';
+import { ConfigKeys } from 'src/config/configKeys';
 import { MailService } from './mail.service';
 
 @Module({
@@ -13,15 +14,15 @@ import { MailService } from './mail.service';
         // transport: config.get("MAIL_TRANSPORT"),
         // or
         transport: {
-          host: config.get('MAIL_HOST'),
+          host: config.get(ConfigKeys.MAIL_HOST),
           secure: false,
           auth: {
-            user: config.get('MAIL_USER'),
-            pass: config.get('MAIL_PASSWORD'),
+            user: config.get(ConfigKeys.MAIL_USER),
+            pass: config.get(ConfigKeys.MAIL_PASSWORD),
           },
         },
         defaults: {
-          from: `"No Reply" <${config.get('MAIL_FROM')}>`,
+          from: `"No Reply" <${config.get(ConfigKeys.MAIL_FROM)}>`,
         },
         template: {
           dir: join(__dirname, 'templates'),

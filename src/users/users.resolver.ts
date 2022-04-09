@@ -23,7 +23,6 @@ import { vertificationPassword } from 'src/util/vertification';
 import { v4 } from 'uuid';
 import {
   CompleteResponse,
-  ForgotPasswordInput,
   LoginInput,
   RegisterInput,
   UserResponse,
@@ -110,20 +109,15 @@ export class UsersResolver {
 
   @Mutation((returns) => CompleteResponse)
   async forgotPassword(
-    @Args('forgotPasswordInput') forgotPasswordInput: ForgotPasswordInput,
+    @Args('email') email: string,
   ): Promise<IResponse<Boolean>> {
-    const validator = InputParameterValidator.object()
-      .validateUsername(forgotPasswordInput.username)
-      .validateEmail(forgotPasswordInput.email);
+    const validator = InputParameterValidator.object().validateEmail(email);
     if (!validator.isValid()) {
       return validator.getErrorResponse();
     }
 
-    //check whether the matching username and email exist
-    const user = await this.usersService.findByUsernameAndEmail(
-      forgotPasswordInput.username,
-      forgotPasswordInput.email,
-    );
+    //check whether the email exist
+    const user = await this.usersService.findByEmail(email);
     if (!user) {
       return { data: true };
     }
@@ -134,20 +128,7 @@ export class UsersResolver {
       ttl: 1000 * 60 * 60 * 24,
     });
 
-    // const mailOptions: {
-    //   from: string;
-    //   to: string;
-    //   subject: string;
-    //   text: string;
-    //   html: string;
-    // } = {
-    //   from: 'ben@ben.com',
-    //   to: user.email,
-    //   subject: 'Please change your password',
-    //   text: 'change your password',
-    //   html: `<a href="http://localhost:3005/change-password/${token}">change your password</a>`,
-    // };
-    await this.mailService.sendUserConfirmation(user, token).catch();
+    this.mailService.sendUserConfirmation(user, token).catch();
     return { data: true };
   }
 
