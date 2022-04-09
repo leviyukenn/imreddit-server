@@ -7,6 +7,7 @@ import { graphqlUploadExpress } from 'graphql-upload';
 import { join } from 'path';
 import { Connection } from 'typeorm';
 import { CommunityModule } from './communities/community.module';
+import { ConfigKeys } from './config/configKeys';
 import { configuration } from './config/configuration';
 import { validationSchema } from './config/envVariablesValidationSchema';
 import { MailModule } from './mail/mail.module';
@@ -37,18 +38,14 @@ import { UsersModule } from './users/users.module';
     }),
 
     TypeOrmModule.forRootAsync({
-      // useFactory: async () =>
-      //   Object.assign(await getConnectionOptions(), {
-      //     autoLoadEntities: true,
-      //   }),
       imports: [ConfigModule],
       useFactory: (configService: ConfigService) => ({
         type: 'postgres',
-        host: configService.get('DATABASE_HOST'),
-        port: configService.get('DATABASE_PORT'),
-        username: configService.get('DATABASE_USERNAME'),
-        password: configService.get('DATABASE_PASSWORD'),
-        database: configService.get('DATABASE_NAME'),
+        host: configService.get(ConfigKeys.DATABASE_HOST),
+        port: configService.get(ConfigKeys.DATABASE_PORT),
+        username: configService.get(ConfigKeys.DATABASE_USERNAME),
+        password: configService.get(ConfigKeys.DATABASE_PASSWORD),
+        database: configService.get(ConfigKeys.DATABASE_NAME),
         autoLoadEntities: true,
         synchronize: true,
       }),
@@ -59,8 +56,7 @@ import { UsersModule } from './users/users.module';
       useFactory: (configService: ConfigService) => ({
         autoSchemaFile: join(process.cwd(), 'src/graphql/schema.gql'),
         cors: {
-          origin: configService.get('FRONTEND_DOMAIN'),
-          // origin: true,
+          origin: configService.get(ConfigKeys.FRONTEND_DOMAIN),
           credentials: true,
         },
         playground: true,

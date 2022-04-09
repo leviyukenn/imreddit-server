@@ -1,5 +1,4 @@
 export const configuration = () => {
-  console.log(process.env.FRONTEND_DOMAIN);
 
   return {
     NODE_ENV: process.env.NODE_ENV,

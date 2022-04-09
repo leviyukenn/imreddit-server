@@ -1,6 +1,7 @@
 import { MailerService } from '@nestjs-modules/mailer';
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { ConfigKeys } from 'src/config/configKeys';
 import { User } from 'src/users/user.entity';
 
 @Injectable()
@@ -12,7 +13,7 @@ export class MailService {
 
   async sendUserConfirmation(user: User, token: string) {
     const frontendServerDomain = this.configService.get(
-      'FRONTEND_LOCAL_DOMAIN',
+      ConfigKeys.FRONTEND_DOMAIN,
     );
     const url = `${frontendServerDomain}/change-password/${token}`;
 

@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Auth, google } from 'googleapis';
+import { ConfigKeys } from 'src/config/configKeys';
 import { createRandomAvatar } from 'src/util/createRandomAvatarLink';
 import { Connection } from 'typeorm';
 import { User, UserRole } from './user.entity';
@@ -12,8 +13,10 @@ export class UsersService {
     private readonly configService: ConfigService,
     private connection: Connection,
   ) {
-    const clientID = this.configService.get('GOOGLE_AUTH_CLIENT_ID');
-    const clientSecret = this.configService.get('GOOGLE_AUTH_CLIENT_SECRET');
+    const clientID = this.configService.get(ConfigKeys.GOOGLE_AUTH_CLIENT_ID);
+    const clientSecret = this.configService.get(
+      ConfigKeys.GOOGLE_AUTH_CLIENT_SECRET,
+    );
 
     this.oauthClient = new google.auth.OAuth2(clientID, clientSecret);
   }
