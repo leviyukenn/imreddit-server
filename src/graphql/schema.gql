@@ -94,11 +94,6 @@ type UserResponse {
   user: User
 }
 
-type RoleResponse {
-  errors: [FieldError!]
-  role: Role
-}
-
 type CommunityResponse {
   errors: [FieldError!]
   community: Community
@@ -140,7 +135,7 @@ type Query {
   community(communityName: String!): Community
   searchCommunities(communityName: String!): [Community!]!
   userRoles(userId: String!): [Role!]!
-  userRole(communityId: String!, userId: String!): Role
+  userRole(communityName: String!, userName: String!): Role
   getUpvote(userId: String!, postId: String!): Upvote
   topics: [Topic!]!
 }
@@ -164,8 +159,8 @@ type Mutation {
   createCommunity(createCommunityInput: CreateCommunityInput!): CommunityResponse!
   editCommunityDescription(description: String!, communityId: String!): CommunityResponse!
   setCommunityAppearance(communityAppearance: CommunityAppearanceInput!, communityId: String!): CommunityResponse!
-  joinCommunity(userId: String!, communityId: String!): RoleResponse!
-  leaveCommunity(userId: String!, communityId: String!): RoleResponse!
+  joinCommunity(communityName: String!): Role!
+  leaveCommunity(communityName: String!): Role!
   vote(voteInput: VoteInput!): UpvoteResponse!
   createTopic(title: String!): Topic!
 }

@@ -36,6 +36,7 @@ export enum ResponseErrorCode {
   ERR0035,
   ERR0036,
   ERR0037,
+  ERR0038,
 }
 export const responseErrorMessages = new Map<ResponseErrorCode, string>([
   [ResponseErrorCode.ERR0001, 'only accept image-type file'],
@@ -84,4 +85,5 @@ export const responseErrorMessages = new Map<ResponseErrorCode, string>([
   [ResponseErrorCode.ERR0035, 'Failed to update post status of that post.'],
   [ResponseErrorCode.ERR0036, 'Internal server Error.'],
   [ResponseErrorCode.ERR0037, 'Failed to upvote.'],
+  [ResponseErrorCode.ERR0038, 'Failed to leave the community.'],
 ]);
