@@ -60,18 +60,10 @@ export class UpvotesResolver {
   }
 
   @Query((returns) => Upvote, { nullable: true })
-  @UseGuards(isAuth)
   async getUpvote(
     @Args('postId') postId: string,
     @Args('userId') userId: string,
-    @Context() { req }: { req: Request },
   ) {
-    if (userId != req.session.userId) {
-      throw new HttpException(
-        responseErrorMessages.get(ResponseErrorCode.ERR0030)!,
-        HttpStatus.BAD_REQUEST,
-      );
-    }
     return this.upvotesService.findUpvote(userId, postId);
   }
 }
